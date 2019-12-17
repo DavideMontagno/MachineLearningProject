@@ -3,14 +3,14 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD
 
-dataset_train1 = loadtxt('monks-1.train', delimiter=' ', usecols=range(1, 8))
-dataset_test1 = loadtxt('monks-1.test', delimiter=' ', usecols=range(1, 8))
+dataset_train1 = loadtxt('dataset/monks-1.train', delimiter=' ', usecols=range(1, 8))
+dataset_test1 = loadtxt('dataset/monks-1.test', delimiter=' ', usecols=range(1, 8))
 
-dataset_train2 = loadtxt('monks-2.train', delimiter=' ', usecols=range(1, 8))
-dataset_test2 = loadtxt('monks-2.test', delimiter=' ', usecols=range(1, 8))
+dataset_train2 = loadtxt('dataset/monks-2.train', delimiter=' ', usecols=range(1, 8))
+dataset_test2 = loadtxt('dataset/monks-2.test', delimiter=' ', usecols=range(1, 8))
 
-dataset_train3 = loadtxt('monks-3.train', delimiter=' ', usecols=range(1, 8))
-dataset_test3 = loadtxt('monks-3.test', delimiter=' ', usecols=range(1, 8))
+dataset_train3 = loadtxt('dataset/monks-3.train', delimiter=' ', usecols=range(1, 8))
+dataset_test3 = loadtxt('dataset/monks-3.test', delimiter=' ', usecols=range(1, 8))
 
 x = dataset_test1[:, 1:7]
 x_test = dataset_train1[:, 1:7]
