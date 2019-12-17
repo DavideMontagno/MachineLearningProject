@@ -15,6 +15,14 @@ y2_tr = dataset_tr[:, -2]
 y2_ts = dataset_ts[:, -2]
 
 '''
+
+w_initial
+eta
+alpha (nesterov only for batch)
+nEpoch
+lambda
+nLayer
+
 model = Sequential()
 model.add(Dense(30, input_dim=6, kernel_initializer='random_normal', activation='sigmoid'))
 model.add(Dense(1, activation='linear'))
