@@ -34,4 +34,15 @@ Make explicit in the Model 1 - Keras Neural Network these hyperparameters:
 - Number of layers: nLayer
 - Number of unit for each layer
 
+## POSSIBLE MODELS:
+
+-NN in Pytorch
+-SVM
+-CNN
+-RNN
+-Random Forest
+-Bayesian model
+-Clustering?
+
+
 
