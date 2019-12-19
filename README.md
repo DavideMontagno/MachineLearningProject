@@ -36,11 +36,12 @@ Make explicit in the Model 1 - Keras Neural Network these hyperparameters:
 
 METRICHE
 
-'''
+```
 def rmse(y_true, y_pred):
     from keras import backend
     return backend.sqrt(backend.mean(backend.square(y_pred - y_true), axis=-1))
-'''
+```
+Root mean squared error: 0 indica la perfezione. Molto sensibile agli outliers, perché è proporzionale all'errore al quadrato. 
 
 
 ## POSSIBLE MODELS:
