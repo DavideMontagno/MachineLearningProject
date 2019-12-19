@@ -34,6 +34,15 @@ Make explicit in the Model 1 - Keras Neural Network these hyperparameters:
 - Number of layers: nLayer
 - Number of unit for each layer
 
+METRICHE
+
+'''
+def rmse(y_true, y_pred):
+    from keras import backend
+    return backend.sqrt(backend.mean(backend.square(y_pred - y_true), axis=-1))
+'''
+
+
 ## POSSIBLE MODELS:
 
 - NN in Pytorch
