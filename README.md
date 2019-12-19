@@ -36,13 +36,13 @@ Make explicit in the Model 1 - Keras Neural Network these hyperparameters:
 
 ## POSSIBLE MODELS:
 
--NN in Pytorch
--SVM
--CNN
--RNN
--Random Forest
--Bayesian model
--Clustering?
+- NN in Pytorch
+- SVM
+- CNN
+- RNN
+- Random Forest
+- Bayesian model
+- Clustering?
 
 
 
