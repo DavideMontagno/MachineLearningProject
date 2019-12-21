@@ -20,6 +20,8 @@ pip install tensorflow
 
 pip install keras
 
+pip install scikit-learn
+
 ```
 
 ## TODO: 
@@ -59,15 +61,7 @@ def r_square(y_true, y_pred):
 ```
 R quadro: 1 indica la perfezione. 
 
-Ci sono su sklearn
-```
-import sklearn.metrics, math
-print("\n")
-print("Mean absolute error (MAE):      %f" % sklearn.metrics.mean_absolute_error(y_test,y_pred))
-print("Mean squared error (MSE):       %f" % sklearn.metrics.mean_squared_error(y_test,y_pred))
-print("Root mean squared error (RMSE): %f" % math.sqrt(sklearn.metrics.mean_squared_error(y_test,y_pred)))
-print("R square (R^2):                 %f" % sklearn.metrics.r2_score(y_test,y_pred))
-```
+
 ## POSSIBLE MODELS:
 
 - NN in Pytorch
