@@ -44,11 +44,11 @@ def coeff_determination(y_true, y_pred):
 # (nesterov only for batch)
 def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, lambda_param=0.01, nUnitPerLayer=20,
                      nLayer=3,
-                     batch_size=100):
+                     batch_size=32):
     model = Sequential()
     model.add(Dense(20, input_dim=20, kernel_initializer='glorot_normal', activation='sigmoid'))
     for i in range(0, nLayer):
-        model.add(Dense(nUnitPerLayer - i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
+        model.add(Dense(nUnitPerLayer - 2*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
                         activation='sigmoid'))
 
     model.add(Dense(2, kernel_initializer='glorot_normal', activation='linear'))
@@ -63,12 +63,12 @@ def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, l
     return history
 
 
-etas = [0.006, 0.008, 0.009]
-alphas = [0.75, 0.8, 0.85]
-nEpoc = 600
-lambdas = [0.008, 0.011]
+etas = [0.002]
+alphas = [0.8, 0.85]
+nEpoc = 450
+lambdas = [0.001,0.002]
 nUnitLayer = 22
-batch_size = 80
+batch_size = 64
 
 for eta in etas:
     for alpha in alphas:
@@ -118,7 +118,7 @@ for eta in etas:
                 averageLoss) + " AverageMSE: " + str(averageMSE) + " AverageMAE: " + str(
                 averageMAE) + " AverageR2: " + str(averageR2))
             plt.legend(forLegend, loc='upper right')
-            plt.savefig('./plots/learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
+            plt.savefig('./plots/2i_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
                 lambda_param) + '_' + str(batch_size) + '_' + str(
                 averageLoss) + '.png', dpi=1000)
             plt.close()
