@@ -46,16 +46,17 @@ def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, l
                      nLayer=3,
                      batch_size=32):
     model = Sequential()
-    model.add(Dense(20, input_dim=20, kernel_initializer='glorot_normal', activation='sigmoid'))
+    model.add(Dense(20, input_dim=20, kernel_initializer='glorot_normal', activation='relu'))
     for i in range(0, nLayer):
-        model.add(Dense(nUnitPerLayer - 2*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
-                        activation='sigmoid'))
+        model.add(Dense(nUnitPerLayer - 3*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
+                        activation='relu'))
 
     model.add(Dense(2, kernel_initializer='glorot_normal', activation='linear'))
 
     sgd = SGD(learning_rate=eta, momentum=alpha, nesterov=False)
     model.compile(optimizer=sgd, loss=euclidean_distance_loss, metrics=['mse', 'mae', coeff_determination])
     # TODO: add validation set in fit
+    #to-do stopping criteria when loss < k
     history = model.fit(x_tr, y_tr, validation_data=(x_ts, y_ts), epochs=nEpoch, batch_size=batch_size, verbose=0,
                         shuffle=True)
     # score = model.evaluate(x_ts, y_ts, verbose=0)
@@ -63,11 +64,11 @@ def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, l
     return history
 
 
-etas = [0.002]
-alphas = [0.8, 0.85]
-nEpoc = 450
-lambdas = [0.001,0.002]
-nUnitLayer = 22
+etas = [0.001]
+alphas = [0.85]
+nEpoc = 70
+lambdas = [0.001]
+nUnitLayer = 20
 batch_size = 64
 
 for eta in etas:
