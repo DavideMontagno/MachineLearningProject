@@ -22,6 +22,11 @@ pip install keras
 
 pip install scikit-learn
 
+for torch 
+
+pip3 install torch torchvision 
+
+
 ```
 
 ## TODO: 
