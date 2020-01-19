@@ -32,12 +32,8 @@ dataset_tr = numpy.genfromtxt(
 def call_loss(y_real, y_pred):
     sum_tot=0
     for i in range(len(y_real)):
-        tmp = y_real[i]-y_pred[i]
-        tmp = tmp * tmp
-        sum = torch.sum(tmp) 
-        sum = torch.sqrt(sum)
-        sum_tot += sum
-    return sum_tot/len(y_real) 
+        sum_tot += torch.sqrt(torch.sum((y_real[i]-y_pred[i])**2 ))
+    return  torch.div(sum_tot,len(y_real))
 
 class Model(torch.nn.Module):
     def __init__(self, D_in, nUnitLayer, D_out):
@@ -129,6 +125,7 @@ for nEpoch in nEpochs:
                             loss = loss_fn(y, y_pred)
                             loss.backward()
                             optimizer.step()
+                        print(str(epoch),' ',str(loss.item()))
                         score_tr.append(loss.item()/batch_size)
                         y_pred_ts = model(torch.tensor(list(x_ts), dtype=torch.float, requires_grad=True).cuda(device.type))
                         loss_ts = loss_fn(torch.tensor(list(y_ts), dtype=torch.float, requires_grad=True).cuda(device.type), y_pred_ts)
