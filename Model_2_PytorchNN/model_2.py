@@ -159,4 +159,3 @@ for nEpoch in nEpochs:
                                                                         averageLoss) + '.png', dpi=500)
                 plt.close()
 
-
