@@ -16,6 +16,8 @@ dataset_tr = numpy.loadtxt('../project/ML-CUP19-TR.csv', delimiter=',', dtype=nu
 X = dataset_tr[:, 1:-2]
 Y = dataset_tr[:, -2:]
 
+#print(K.sqrt(K.sum(K.square([3,0] - [4,0]), axis=-1)))
+#exit(1)
 '''
 w_initial
 kernel initialization
@@ -30,7 +32,7 @@ def euclidean_distance_loss(y_true, y_pred):
     :param y_pred: TensorFlow/Theano tensor of the same shape as y_true
     :return: float
     """
-    return K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1))
+    return K.mean(K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1)))
 
 
 def coeff_determination(y_true, y_pred):
@@ -54,11 +56,12 @@ def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, l
     model.add(Dense(2, kernel_initializer='glorot_normal', activation='linear'))
 
     sgd = SGD(learning_rate=eta, momentum=alpha, nesterov=False)
-    model.compile(optimizer=sgd, loss=euclidean_distance_loss, metrics=['mse', 'mae', coeff_determination])
+    #model.compile(optimizer=sgd, loss=euclidean_distance_loss, metrics=['mse', 'mae', coeff_determination])
+    model.compile(optimizer=sgd, loss=euclidean_distance_loss)
     # TODO: add validation set in fit
     #to-do stopping criteria when loss < k
     history = model.fit(x_tr, y_tr, validation_data=(x_ts, y_ts), epochs=nEpoch, batch_size=batch_size, verbose=0,
-                        shuffle=True)
+                        shuffle=False)
     # score = model.evaluate(x_ts, y_ts, verbose=0)
     #return history, score
     return history
@@ -86,7 +89,8 @@ for eta in etas:
                 history = trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta, alpha, nEpoc, lambda_param,
                                                   nUnitLayer, 3,
                                                   batch_size)
-                score = [history.history['val_loss'][-1], history.history['val_mse'][-1], history.history['val_mae'][-1], history.history['val_coeff_determination'][-1]]
+                #score = [history.history['val_loss'][-1], history.history['val_mse'][-1], history.history['val_mae'][-1], history.history['val_coeff_determination'][-1]]
+                cvscores.append([history.history['loss'][-1], history.history['val_loss'][-1]])
                 # Plot training loss values (just half of them)
                 if nFold % 2 == 0:
                     plt.plot(history.history['loss'])
@@ -96,30 +100,31 @@ for eta in etas:
                     plt.ylabel('Loss')
                     plt.xlabel('Epoch')
                     # plt.show()
-                    cvscores.append(score)
                     forLegend.append('Train ' + str(nFold))
                     forLegend.append('Validation ' + str(nFold))
                 nFold += 1
-            averageLoss = 0
-            averageMSE = 0
-            averageMAE = 0
-            averageR2 = 0
+            averageLoss = 0            
+            averageLossTR = 0
+            #averageMSE = 0
+            #averageMAE = 0
+            #averageR2 = 0
             for score in cvscores:
                 averageLoss += score[0]
-                averageMSE += score[1]
-                averageMAE += score[2]
-                averageR2 += score[3]
+                averageLossTR += score[1]
+                #averageMSE += score[1]
+                #averageMAE += score[2]
+                #averageR2 += score[3]
             averageLoss /= len(cvscores)
-            averageMSE /= len(cvscores)
-            averageMAE /= len(cvscores)
-            averageR2 /= len(cvscores)
+            averageLossTR /= len(cvscores)
+            #averageMSE /= len(cvscores)
+            #averageMAE /= len(cvscores)
+            #averageR2 /= len(cvscores)
             print("Eta: " + str(eta) + "  Alpha: " + str(alpha) + " nEpoch: " + str(nEpoc) + " Lambda: " + str(
                 lambda_param) + " nUnitPerLayer: " + str(nUnitLayer) + " Batch size: " + str(
                 batch_size) + " AverageLoss (on validation set): " + str(
-                averageLoss) + " AverageMSE: " + str(averageMSE) + " AverageMAE: " + str(
-                averageMAE) + " AverageR2: " + str(averageR2))
+                averageLossTR))
             plt.legend(forLegend, loc='upper right')
             plt.savefig('./plots/2i_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
                 lambda_param) + '_' + str(batch_size) + '_' + str(
-                averageLoss) + '.png', dpi=1000)
+                averageLossTR) + '.png', dpi=1000)
             plt.close()

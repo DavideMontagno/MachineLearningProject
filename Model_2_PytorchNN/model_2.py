@@ -1,14 +1,9 @@
 import torch
 import numpy
-<<<<<<< HEAD
 import math
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
 
-=======
-from sklearn.model_selection import KFold
-import matplotlib.pyplot as plt
->>>>>>> 353ade9ed0edeb07cd3a5657712727ff9bd91bff
 
 dataset_tr = numpy.genfromtxt(
     '../project/ML-CUP19-TR.csv', delimiter=',', dtype=numpy.float64)
@@ -33,7 +28,6 @@ dataset_tr = numpy.genfromtxt(
 
 
 
-<<<<<<< HEAD
 class TwoLayerNet(torch.nn.Module):
     def __init__(self, D_in, nUnitLayer, D_out):
         """
@@ -147,7 +141,6 @@ for nEpoch in nEpochs:
                 plt.close()
 
             
-=======
 
 def init_weights(m):
     if type(m) == torch.nn.Linear:
@@ -238,4 +231,3 @@ plt.savefig('./plots/learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(
     lambda_param) + '_' + str(batch_size) + '_' + str(
     averageLoss) + '.png', dpi=500)
 plt.close()
->>>>>>> 353ade9ed0edeb07cd3a5657712727ff9bd91bff
