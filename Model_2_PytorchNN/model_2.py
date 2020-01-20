@@ -19,11 +19,11 @@ nUnitLayer = 16
 pyramid=3
 D_out = 2
 batch_size = 64
-etas = [0.001, ]
-alphas = [0.9, ]
-lambdas = [0.0001]
+etas = [0.001, 0.002, 0.0015]
+alphas = [0.9, 0.85, 0.8]
+lambdas = [0.001, 0.0005]
 nFold=0
-nEpochs = [100, ]
+nEpochs = [100 ]
 splits_kfold = 10
 
 #main functions
