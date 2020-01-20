@@ -19,12 +19,11 @@ nUnitLayer = 16
 pyramid=3
 D_out = 2
 batch_size = 64
-etas = [0.001]
-alphas = [0.85]
+etas = [0.001, ]
+alphas = [0.9, ]
 lambdas = [0.0001]
 nFold=0
-forLegend = []
-nEpochs = [100]
+nEpochs = [100, ]
 splits_kfold = 10
 
 #main functions
@@ -101,8 +100,8 @@ for nEpoch in nEpochs:
                 for traing_index, test_index in kfold.split(X):
                     x_tr = X[traing_index] 
                     y_tr = Y[traing_index] 
-                    x_ts = X[traing_index] 
-                    y_ts = Y[traing_index]
+                    x_ts = X[test_index] 
+                    y_ts = Y[test_index]
                     score_tr = []
                     score_ts = []
                     model = Model(D_in, nUnitLayer, D_out)
@@ -134,7 +133,7 @@ for nEpoch in nEpochs:
                         if(epoch!=0 and epoch%(nEpoch-1)==0):
                                 last_loss_tr.append(loss.item())
                                 last_loss_ts.append(loss_ts.item())
-                                print('Taked new minimum. New best score list is:',best_tr)  
+                                print('Took new minimum. ',last_loss_tr)  
                     averageLoss = 0
                     for cv_value in last_loss_tr:
                         averageLoss += cv_value
@@ -145,12 +144,10 @@ for nEpoch in nEpochs:
                     averageLossTs /= len(last_loss_ts)
                     if nFold % 2 == 0:
 
-                            plt.plot(score_tr)
-                            plt.plot(score_ts)
-                            plt.title('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
-                                lambda_param) + '_' + str(batch_size))
-                            plt.ylabel('Loss')
-                            plt.xlabel('Epoch')
+                            plt1.plot(score_tr)
+                            plt1.plot(score_ts)
+                            plt2.plot(range(25,nEpoch),score_tr[25:])
+                            plt2.plot(range(25,nEpoch),score_ts[25:])
                             forLegend.append('Train ' + str(nFold))
                             forLegend.append('Validation ' + str(nFold))
                     nFold += 1
@@ -160,8 +157,10 @@ for nEpoch in nEpochs:
                                     batch_size) + " AverageLoss (on training set): (" + str(
                                     averageLoss)+','+str(averageLossTs)+')')
                 print('Creating plot...')
-                plt.legend(forLegend, loc='upper right')
-                plt.savefig('./plots/final_plot/learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
+                fig.legend(forLegend, loc='center right')
+                fig.suptitle('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
+                                lambda_param) + '_' + str(batch_size))
+                fig.savefig('./plots/final_plot/learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
                                                                         lambda_param) + '_' + str(batch_size) + '_' + str(nUnitLayer) + 
                                                                         '_' + str(
                                                                         averageLoss) + '.png', dpi=500)
