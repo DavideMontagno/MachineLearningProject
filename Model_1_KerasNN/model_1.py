@@ -3,6 +3,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.regularizers import l2
 from keras.optimizers import SGD
+from keras.utils import plot_model
 import keras.backend as K
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
@@ -48,7 +49,7 @@ def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, l
                      nLayer=3,
                      batch_size=32):
     model = Sequential()
-    model.add(Dense(20, input_dim=20, kernel_initializer='glorot_normal', activation='relu'))
+    #model.add(Dense(20, input_dim=20, kernel_initializer='glorot_normal', activation='relu'))
     for i in range(0, nLayer):
         model.add(Dense(nUnitPerLayer - 3*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
                         activation='relu'))
@@ -58,26 +59,28 @@ def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, l
     sgd = SGD(learning_rate=eta, momentum=alpha, nesterov=False)
     #model.compile(optimizer=sgd, loss=euclidean_distance_loss, metrics=['mse', 'mae', coeff_determination])
     model.compile(optimizer=sgd, loss=euclidean_distance_loss)
-    # TODO: add validation set in fit
     #to-do stopping criteria when loss < k
-    history = model.fit(x_tr, y_tr, validation_data=(x_ts, y_ts), epochs=nEpoch, batch_size=batch_size, verbose=0,
-                        shuffle=False)
+    history = model.fit(x_tr, y_tr, validation_data=(x_ts, y_ts), epochs=nEpoch, batch_size=batch_size, verbose=0)
     # score = model.evaluate(x_ts, y_ts, verbose=0)
     #return history, score
+    #plot_model(model, to_file='model_now.png',show_shapes=True)
     return history
 
 
 etas = [0.001]
 alphas = [0.85]
-nEpoc = 70
-lambdas = [0.001]
-nUnitLayer = 20
+nEpoc = 100
+lambdas = [0.0001]
+nUnitLayer = 16
 batch_size = 64
 
 for eta in etas:
     for alpha in alphas:
         for lambda_param in lambdas:
-            kfold = KFold(n_splits=10, random_state=None)
+            fig, (plt1, plt2) = plt.subplots(2, 1)
+            #plt1.ylabel('Loss')
+            #plt2.xlabel('Epoch')
+            kfold = KFold(n_splits=10, random_state=None, shuffle=True)
             cvscores = []
             nFold = 0
             forLegend = []
@@ -92,14 +95,13 @@ for eta in etas:
                 #score = [history.history['val_loss'][-1], history.history['val_mse'][-1], history.history['val_mae'][-1], history.history['val_coeff_determination'][-1]]
                 cvscores.append([history.history['loss'][-1], history.history['val_loss'][-1]])
                 # Plot training loss values (just half of them)
-                if nFold % 2 == 0:
-                    plt.plot(history.history['loss'])
-                    plt.plot(history.history['val_loss'])
-                    plt.title('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
-                        lambda_param) + '_' + str(batch_size))
-                    plt.ylabel('Loss')
-                    plt.xlabel('Epoch')
-                    # plt.show()
+                if nFold % 3 == 0:
+                    #plt.subplot(2, 1, 1)
+                    plt1.plot(history.history['loss'])
+                    plt1.plot(history.history['val_loss'])
+                    #plt.subplot(2, 1, 2)
+                    plt2.plot(range(25,nEpoc),history.history['loss'][25:])
+                    plt2.plot(range(25,nEpoc),history.history['val_loss'][25:])
                     forLegend.append('Train ' + str(nFold))
                     forLegend.append('Validation ' + str(nFold))
                 nFold += 1
@@ -123,8 +125,11 @@ for eta in etas:
                 lambda_param) + " nUnitPerLayer: " + str(nUnitLayer) + " Batch size: " + str(
                 batch_size) + " AverageLoss (on validation set): " + str(
                 averageLossTR))
-            plt.legend(forLegend, loc='upper right')
-            plt.savefig('./plots/2i_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
+            fig.legend(forLegend, loc='center right')
+            fig.suptitle('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
+                lambda_param) + '_' + str(batch_size))
+            fig.savefig('./plots/3i_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
                 lambda_param) + '_' + str(batch_size) + '_' + str(
-                averageLossTR) + '.png', dpi=1000)
+                averageLossTR) + '.png', dpi=600)
             plt.close()
+            
