@@ -1,61 +1,65 @@
-from libsvm.svmutil import *
-import numpy
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.svm import SVR
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import KFold
+
+dataset_tr = np.genfromtxt(
+    '../project/ML-CUP19-TR.csv', delimiter=',', dtype=np.float64)
+
+X = dataset_tr[:, 1:-2]
+Y = dataset_tr[:, -2:]
+Y1 = dataset_tr[:, -1]
+Y2 = dataset_tr[:, -2]
 
 
+def call_loss(y_real, y_pred):
+    sum_tot=0
+    for i in range(len(y_real)):
+        sum_tot += np.sqrt(np.sum((y_real[i]-y_pred[i])**2))
+    return  sum_tot/len(y_real)
 
-dataset_tr = numpy.genfromtxt(
-    '../project/ML-CUP19-TR.csv', delimiter=',', dtype=numpy.float64)
-    
-x = dataset_tr[:, 1:-2]
-y = dataset_tr[:, -2:]
+splits_kfold = 10
+Cs = [10]
+gammas = [0.1]
+epsilons = [0.1]
 
-m = svm_train(y[:200], x[:200], '-c 4')
-p_label, p_acc, p_val = svm_predict(y[200:], x[200:], m)
+kfold = KFold(n_splits=splits_kfold,
+    random_state=None, shuffle=True)
 
-#format data for read csv
-'''
-target id_1:value id_2:value id_3:value ... id_n:value #1 line
-'''
+for epsilon in epsilons:
+    for C in Cs:
+        for gamma in gammas:
+            all_loss = []
+            for traing_index, test_index in kfold.split(X):
+                x_tr = X[traing_index]
+                y_tr = Y[traing_index]
+                #y_tr1 = Y1[traing_index]
+                #y_tr2 = Y2[traing_index]                 
+                x_ts = X[test_index] 
+                #y_ts1 = Y1[test_index]
+                #y_ts2 = Y2[test_index]
+                
+                y_ts = Y[test_index]
 
+                #svr_rbf1 = SVR(kernel='rbf', C=C, gamma=gamma, epsilon=epsilon)
+                #svr_rbf1.fit(x_tr, np.ravel(y_tr1))
 
-#cross-validation
-'''
-Function: void svm_cross_validation(const struct svm_problem *prob,
-	const struct svm_parameter *param, int nr_fold, double *target);
+                #svr_rbf2 = SVR(kernel='rbf', C=C, gamma=gamma, epsilon=epsilon)
+                #svr_rbf2.fit(x_tr, np.ravel(y_tr2))
 
-    This function conducts cross validation. Data are separated to
-    nr_fold folds. Under given parameters, sequentially each fold is
-    validated using the model from training the remaining. Predicted
-    labels (of all prob's instances) in 
+                #y_pred1 = svr_rbf1.predict(x_ts)
+                #y_pred2 = svr_rbf2.predict(x_ts)
 
-'''
+                mor = MultiOutputRegressor(SVR(kernel='rbf', C=C, gamma=gamma, epsilon=epsilon))
+                mor.fit(x_tr,y_tr)
 
-
-#predict value
-'''
-Function: double svm_predict_values(const svm_model *model,
-				    const svm_node *x, double* dec_values)
-
-    This function gives decision values on a test vector x given a
-    model, and return the predicted label (classification) or
-    the function value (regression).
-
-    For a classification model with nr_class classes, this function
-    gives nr_class*(nr_class-1)/2 decision values in the array
-    dec_values, where nr_class can be obtained from the function
-    svm_get_nr_class. The order is label[0] vs. label[1], ...,
-    label[0] vs. label[nr_class-1], label[1] vs. label[2], ...,
-    label[nr_class-2] vs. label[nr_class-1], where label can be
-    obtained from the function svm_get_labels. The returned value is
-    the predicted class for x. Note that when nr_class = 1, this
-    function does not give any decision value.
-
-    For a regression model, dec_values[0] and the returned value are
-    both the function value of x calculated using the model. For a
-    one-class model, dec_values[0] is the decision value of x, while
-    the returned value is +1/-1.
-'''
-
-
-
+                '''y_pred_couple = []
+                for i in range(len(y_pred1)):
+                    y_pred_couple.append([y_pred1[i], y_pred2[i]])
+                '''
+                y_pred =  mor.predict(x_ts)
+                #all_loss.append(call_loss(y_ts, y_pred_couple))
+                all_loss.append(call_loss(y_ts, y_pred))
+            print("\nMy loss : ",C,' ',gamma,' ',epsilon,' ',np.mean(all_loss))
 

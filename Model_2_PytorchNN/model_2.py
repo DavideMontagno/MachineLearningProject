@@ -101,8 +101,8 @@ for nEpoch in nEpochs:
                 for traing_index, test_index in kfold.split(X):
                     x_tr = X[traing_index] 
                     y_tr = Y[traing_index] 
-                    x_ts = X[traing_index] 
-                    y_ts = Y[traing_index]
+                    x_ts = X[test_index] 
+                    y_ts = Y[test_index]
                     score_tr = []
                     score_ts = []
                     model = Model(D_in, nUnitLayer, D_out)

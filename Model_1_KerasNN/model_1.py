@@ -8,7 +8,6 @@ import keras.backend as K
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
 import os
-print(K.tensorflow_backend._get_available_gpus())
 
 
 # Just disables the warning about AVX AVX2
@@ -37,15 +36,6 @@ def euclidean_distance_loss(y_true, y_pred):
     """
     return K.mean(K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1)))
 
-
-def coeff_determination(y_true, y_pred):
-    # r squared metric
-    # https://jmlb.github.io/ml/2017/03/20/CoeffDetermination_CustomMetric4Keras/
-    SS_res = K.sum(K.square(y_true - y_pred))
-    SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
-    return (1 - SS_res / (SS_tot + K.epsilon()))
-
-
 # (nesterov only for batch)
 def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, lambda_param=0.01, nUnitPerLayer=20,
                      nLayer=3,
@@ -64,7 +54,6 @@ def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, l
     #to-do stopping criteria when loss < k
     history = model.fit(x_tr, y_tr, validation_data=(x_ts, y_ts), epochs=nEpoch, batch_size=batch_size, verbose=0)
     # score = model.evaluate(x_ts, y_ts, verbose=0)
-    #return history, score
     #plot_model(model, to_file='model_now.png',show_shapes=True)
     return history
 
@@ -109,20 +98,11 @@ for eta in etas:
                 nFold += 1
             averageLoss = 0            
             averageLossTR = 0
-            #averageMSE = 0
-            #averageMAE = 0
-            #averageR2 = 0
             for score in cvscores:
                 averageLoss += score[0]
                 averageLossTR += score[1]
-                #averageMSE += score[1]
-                #averageMAE += score[2]
-                #averageR2 += score[3]
             averageLoss /= len(cvscores)
             averageLossTR /= len(cvscores)
-            #averageMSE /= len(cvscores)
-            #averageMAE /= len(cvscores)
-            #averageR2 /= len(cvscores)
             print("Eta: " + str(eta) + "  Alpha: " + str(alpha) + " nEpoch: " + str(nEpoc) + " Lambda: " + str(
                 lambda_param) + " nUnitPerLayer: " + str(nUnitLayer) + " Batch size: " + str(
                 batch_size) + " AverageLoss (on validation set): " + str(
