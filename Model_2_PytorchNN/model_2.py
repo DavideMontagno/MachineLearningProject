@@ -84,7 +84,7 @@ for nEpoch in nEpochs:
     for eta in etas:
         for alpha in alphas:
             for lambda_param in lambdas:
-                cvscores = []
+                fig, (plt1, plt2) = plt.subplots(2, 1)
                 nFold = 0
                 forLegend = []
                 kfold = KFold(n_splits=splits_kfold, random_state=None, shuffle=True)
@@ -96,8 +96,8 @@ for nEpoch in nEpochs:
                 print('Started at', datetime.now())
                 print('Executing cross-validation')
                 
-                last_best_tr = []
-                last_best_ts = []
+                last_loss_tr = []
+                last_loss_ts = []
                 for traing_index, test_index in kfold.split(X):
                     x_tr = X[traing_index] 
                     y_tr = Y[traing_index] 
@@ -132,17 +132,17 @@ for nEpoch in nEpochs:
                         loss_ts = loss_fn(torch.tensor(list(y_ts), dtype=torch.float, requires_grad=True).cuda(device.type), y_pred_ts)
                         score_ts.append(loss_ts.item())
                         if(epoch!=0 and epoch%(nEpoch-1)==0):
-                                last_best_tr.append(loss.item())
-                                last_best_ts.append(loss_ts.item())
+                                last_loss_tr.append(loss.item())
+                                last_loss_ts.append(loss_ts.item())
                                 print('Taked new minimum. New best score list is:',best_tr)  
                     averageLoss = 0
-                    for cv_value in last_best_tr:
+                    for cv_value in last_loss_tr:
                         averageLoss += cv_value
-                    averageLoss /= len(last_best_tr)
+                    averageLoss /= len(last_loss_tr)
                     averageLossTs = 0
-                    for cv_value2 in last_best_ts:
+                    for cv_value2 in last_loss_ts:
                         averageLossTs += cv_value2
-                    averageLossTs /= len(last_best_ts)
+                    averageLossTs /= len(last_loss_ts)
                     if nFold % 2 == 0:
 
                             plt.plot(score_tr)

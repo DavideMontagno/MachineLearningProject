@@ -8,6 +8,8 @@ import keras.backend as K
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
 import os
+print(K.tensorflow_backend._get_available_gpus())
+
 
 # Just disables the warning about AVX AVX2
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
