@@ -4,31 +4,30 @@ import math
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
+from datetime import datetime
 
+
+
+
+# inizialization
 dataset_tr = numpy.genfromtxt(
     '../project/ML-CUP19-TR.csv', delimiter=',', dtype=numpy.float64)
-
-
-
 X = dataset_tr[:, 1:-2]
 Y = dataset_tr[:, -2:]
 D_in = 20
-nUnitLayer = 25
+nUnitLayer = 16
+pyramid=3
 D_out = 2
 batch_size = 64
-loss_fn = lambda y_real,y_pred: call_loss(y_real, y_pred) 
-   
 etas = [0.001]
-alphas = [0.8]
+alphas = [0.85]
 lambdas = [0.0001]
-
 nFold=0
 forLegend = []
-nEpochs = [ 70 ]
+nEpochs = [100]
+splits_kfold = 10
 
-dataset_tr = numpy.genfromtxt(
-    '../project/ML-CUP19-TR.csv', delimiter=',', dtype=numpy.float64)
-
+#main functions
 def call_loss(y_real, y_pred):
     sum_tot=0
     for i in range(len(y_real)):
@@ -42,12 +41,13 @@ class Model(torch.nn.Module):
         member variables.
         """
         super(Model, self).__init__()
-        self.input = torch.nn.Linear(D_in, nUnitLayer)
-        self.hidden1 = torch.nn.Linear(nUnitLayer, nUnitLayer)
-        self.hidden2 = torch.nn.Linear(nUnitLayer, nUnitLayer)
-        self.hidden3 = torch.nn.Linear(nUnitLayer, nUnitLayer)
-        self.output = torch.nn.Linear(nUnitLayer, D_out)
-
+        
+        self.input = torch.nn.Linear(D_in, nUnitLayer, bias=False)
+        self.hidden1 = torch.nn.Linear(nUnitLayer, nUnitLayer, bias=False)
+        self.hidden2 = torch.nn.Linear(nUnitLayer, nUnitLayer-1*pyramid, bias=False)
+        self.hidden3 = torch.nn.Linear(nUnitLayer-1*pyramid, nUnitLayer-2*pyramid, bias=False)
+        self.output = torch.nn.Linear(nUnitLayer-2*pyramid, D_out, bias=False)
+       
     def forward(self, x):
         """
         In the forward function we accept a Tensor of input data and we must return
@@ -55,30 +55,29 @@ class Model(torch.nn.Module):
         well as arbitrary operators on Tensors.
         """
         hidden_t = self.input(x)
-        h_relu = self.hidden1(hidden_t).clamp(min=0,max=1)
-        h_relu2 = self.hidden2(h_relu).clamp(min=0,max=1)
-        h_relu3 = self.hidden2(h_relu2).clamp(min=0,max=1)
+        h_relu = F.relu(self.hidden1(hidden_t))
+        h_relu2 = F.relu(self.hidden2(h_relu))
+        h_relu3 = F.relu(self.hidden3(h_relu2))
         y_pred = self.output(h_relu3)
         return y_pred
 
-
-
 def init_weights(m):
     if type(m) == torch.nn.Linear:
+        m.requires_grad=True
         torch.nn.init.xavier_uniform_(m.weight, gain=1.0)
 
+
+
+
+loss_fn = lambda y_real,y_pred: call_loss(y_real, y_pred) 
 model = Model(D_in, nUnitLayer, D_out)
 model.apply(init_weights)
 model.cuda()
-
-
+print(model)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 if(device.type=='cuda'):
     print(torch.cuda.get_device_name(torch.cuda.current_device()),'enabled:',torch.backends.cudnn.enabled)
-if device.type == 'cuda':
-            print('Memory Usage:')
-            print('Allocated:', round(torch.cuda.memory_allocated(device)/1024**3,1), 'GB')
-            print('Cached:   ', round(torch.cuda.memory_cached(device)/1024**3,1), 'GB')
+
 
 
 for nEpoch in nEpochs:
@@ -88,32 +87,35 @@ for nEpoch in nEpochs:
                 cvscores = []
                 nFold = 0
                 forLegend = []
-                kfold = KFold(n_splits=10, random_state=None)
+                kfold = KFold(n_splits=splits_kfold, random_state=None, shuffle=True)
+                print("Working on")
                 print("Eta: " + str(eta) + "  Alpha: " + str(alpha) + " nEpoch: " + str(nEpoch) + " Lambda: " + str(
                                     lambda_param) + " nUnitPerLayer: " + str(nUnitLayer) + " Batch size: " + str(
                                     batch_size))
                 
+                print('Started at', datetime.now())
+                print('Executing cross-validation')
+                
+                best_tr = []
                 for traing_index, test_index in kfold.split(X):
                     x_tr = X[traing_index] 
                     y_tr = Y[traing_index] 
                     x_ts = X[traing_index] 
                     y_ts = Y[traing_index]
+                    score_tr = []
+                    score_ts = []
+                    best_ts = []
                     model = Model(D_in, nUnitLayer, D_out)
                     model.apply(init_weights)
                     model.cuda()
                     optimizer = optimizer = torch.optim.SGD(
                     model.parameters(), lr=eta, momentum=alpha, weight_decay=lambda_param)
-                    score_tr = []
-                    score_ts = []
-
-                    
                     for epoch in range(nEpoch):
                         loss = torch.zeros(1)
                         for i in range(int(len(x_tr) / batch_size)):
                             # TODO requires_grad=True ???
                             # TODO: validation set
                             optimizer.zero_grad()
-
                             l = i * batch_size
                             r = (i + 1) * batch_size
                             x = torch.tensor(list(
@@ -125,17 +127,23 @@ for nEpoch in nEpochs:
                             loss = loss_fn(y, y_pred)
                             loss.backward()
                             optimizer.step()
-                        print(str(epoch),' ',str(loss.item()))
-                        score_tr.append(loss.item()/batch_size)
+                        score_tr.append(loss.item())
                         y_pred_ts = model(torch.tensor(list(x_ts), dtype=torch.float, requires_grad=True).cuda(device.type))
                         loss_ts = loss_fn(torch.tensor(list(y_ts), dtype=torch.float, requires_grad=True).cuda(device.type), y_pred_ts)
                         score_ts.append(loss_ts.item())
-
+                        if(epoch!=0 and epoch%(nEpoch-1)==0):
+                                best_tr.append(loss.item())
+                                print('Taked new minimum. New best score list is:',best_tr)  
                     averageLoss = 0
-                    for cv_value in score_tr:
+                    for cv_value in best_tr:
                         averageLoss += cv_value
-                    averageLoss /= len(score_tr)
+                    averageLoss /= len(best_tr)
+                    averageLossTs = 0
+                    for cv_value2 in score_ts:
+                        averageLossTs += cv_value2
+                    averageLossTs /= len(score_ts)
                     if nFold % 2 == 0:
+
                             plt.plot(score_tr)
                             plt.plot(score_ts)
                             plt.title('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
@@ -145,14 +153,15 @@ for nEpoch in nEpochs:
                             forLegend.append('Train ' + str(nFold))
                             forLegend.append('Validation ' + str(nFold))
                     nFold += 1
+                print('Cross-Validation ended successfully!', datetime.now())
                 print("Eta: " + str(eta) + "  Alpha: " + str(alpha) + " nEpoch: " + str(nEpoch) + " Lambda: " + str(
                                     lambda_param) + " nUnitPerLayer: " + str(nUnitLayer) + " Batch size: " + str(
-                                    batch_size) + " AverageLoss (on validation set): " + str(
-                                    averageLoss))
+                                    batch_size) + " AverageLoss (on training set): (" + str(
+                                    averageLoss)+','+str(averageLossTs)+')')
+                print('Creating plot...')
                 plt.legend(forLegend, loc='upper right')
-                plt.savefig('./plots/learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
+                plt.savefig('./plots/final_plot/learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
                                                                         lambda_param) + '_' + str(batch_size) + '_' + str(nUnitLayer) + 
                                                                         '_' + str(
                                                                         averageLoss) + '.png', dpi=500)
                 plt.close()
-
