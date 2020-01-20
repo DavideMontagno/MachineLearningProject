@@ -96,7 +96,8 @@ for nEpoch in nEpochs:
                 print('Started at', datetime.now())
                 print('Executing cross-validation')
                 
-                best_tr = []
+                last_best_tr = []
+                last_best_ts = []
                 for traing_index, test_index in kfold.split(X):
                     x_tr = X[traing_index] 
                     y_tr = Y[traing_index] 
@@ -104,7 +105,6 @@ for nEpoch in nEpochs:
                     y_ts = Y[traing_index]
                     score_tr = []
                     score_ts = []
-                    best_ts = []
                     model = Model(D_in, nUnitLayer, D_out)
                     model.apply(init_weights)
                     model.cuda()
@@ -132,16 +132,17 @@ for nEpoch in nEpochs:
                         loss_ts = loss_fn(torch.tensor(list(y_ts), dtype=torch.float, requires_grad=True).cuda(device.type), y_pred_ts)
                         score_ts.append(loss_ts.item())
                         if(epoch!=0 and epoch%(nEpoch-1)==0):
-                                best_tr.append(loss.item())
+                                last_best_tr.append(loss.item())
+                                last_best_ts.append(loss_ts.item())
                                 print('Taked new minimum. New best score list is:',best_tr)  
                     averageLoss = 0
-                    for cv_value in best_tr:
+                    for cv_value in last_best_tr:
                         averageLoss += cv_value
-                    averageLoss /= len(best_tr)
+                    averageLoss /= len(last_best_tr)
                     averageLossTs = 0
-                    for cv_value2 in score_ts:
+                    for cv_value2 in last_best_ts:
                         averageLossTs += cv_value2
-                    averageLossTs /= len(score_ts)
+                    averageLossTs /= len(last_best_ts)
                     if nFold % 2 == 0:
 
                             plt.plot(score_tr)
