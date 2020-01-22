@@ -15,15 +15,15 @@ dataset_tr = numpy.genfromtxt(
 X = dataset_tr[:, 1:-2]
 Y = dataset_tr[:, -2:]
 D_in = 20
-nUnitLayer = 16
+nUnitLayer = 25
 pyramid=3
 D_out = 2
 batch_size = 64
 etas = [0.001, 0.002, 0.0015]
-alphas = [0.9, 0.85, 0.8]
-lambdas = [0.001, 0.0005]
+alphas = [0.001, 0.0005]
+lambdas = [0.002]
 nFold=0
-nEpochs = [100 ]
+nEpochs = [110]
 splits_kfold = 10
 
 #main functions
@@ -40,23 +40,20 @@ class Model(torch.nn.Module):
         member variables.
         """
         super(Model, self).__init__()
-        
-        self.input = torch.nn.Linear(D_in, nUnitLayer, bias=False)
-        self.hidden1 = torch.nn.Linear(nUnitLayer, nUnitLayer, bias=False)
-        self.hidden2 = torch.nn.Linear(nUnitLayer, nUnitLayer-1*pyramid, bias=False)
-        self.hidden3 = torch.nn.Linear(nUnitLayer-1*pyramid, nUnitLayer-2*pyramid, bias=False)
-        self.output = torch.nn.Linear(nUnitLayer-2*pyramid, D_out, bias=False)
-       
+        self.hidden1 = torch.nn.Linear(D_in, nUnitLayer, bias=False)
+       # self.hidden2 = torch.nn.Linear(nUnitLayer, nUnitLayer-1*pyramid, bias=False)
+        self.hidden3 = torch.nn.Linear(nUnitLayer, nUnitLayer-1*pyramid, bias=False)
+        self.output = torch.nn.Linear(nUnitLayer-1*pyramid, D_out, bias=False)
     def forward(self, x):
         """
         In the forward function we accept a Tensor of input data and we must return
         a Tensor of output data. We can use Modules defined in the constructor as
         well as arbitrary operators on Tensors.
         """
-        hidden_t = self.input(x)
-        h_relu = F.relu(self.hidden1(hidden_t))
-        h_relu2 = F.relu(self.hidden2(h_relu))
-        h_relu3 = F.relu(self.hidden3(h_relu2))
+        h_relu = F.relu(self.hidden1(x))
+       # h_relu2 = F.relu(self.hidden2(h_relu))
+       #h_relu3= F.relu(self.hidden3(h_relu2))
+        h_relu3 = F.relu(self.hidden3(h_relu))
         y_pred = self.output(h_relu3)
         return y_pred
 
@@ -97,6 +94,7 @@ for nEpoch in nEpochs:
                 
                 last_loss_tr = []
                 last_loss_ts = []
+                step=1
                 for traing_index, test_index in kfold.split(X):
                     x_tr = X[traing_index] 
                     y_tr = Y[traing_index] 
@@ -133,7 +131,9 @@ for nEpoch in nEpochs:
                         if(epoch!=0 and epoch%(nEpoch-1)==0):
                                 last_loss_tr.append(loss.item())
                                 last_loss_ts.append(loss_ts.item())
-                                print('Took new minimum. ',last_loss_tr)  
+                                print('...Ended phase',step,'of ',splits_kfold) 
+                                step=step+1
+                                print(last_loss_tr,'-',last_loss_ts) 
                     averageLoss = 0
                     for cv_value in last_loss_tr:
                         averageLoss += cv_value
@@ -160,8 +160,9 @@ for nEpoch in nEpochs:
                 fig.legend(forLegend, loc='center right')
                 fig.suptitle('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
                                 lambda_param) + '_' + str(batch_size))
-                fig.savefig('./plots/final_plot/learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
+                fig.savefig('./plots/model_correct_2/learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
                                                                         lambda_param) + '_' + str(batch_size) + '_' + str(nUnitLayer) + 
                                                                         '_' + str(
                                                                         averageLoss) + '.png', dpi=500)
                 plt.close()
+                print('Completed!')
