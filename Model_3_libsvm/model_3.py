@@ -20,9 +20,9 @@ def call_loss(y_real, y_pred):
     return  sum_tot/len(y_real)
 
 splits_kfold = 10
-Cs = [10]
-gammas = [0.1]
-epsilons = [0.1]
+Cs = [10,20,30]
+gammas = [0.1,0.5]
+epsilons = [0.1,0.3]
 
 kfold = KFold(n_splits=splits_kfold,
     random_state=None, shuffle=True)
@@ -61,5 +61,5 @@ for epsilon in epsilons:
                 y_pred =  mor.predict(x_ts)
                 #all_loss.append(call_loss(y_ts, y_pred_couple))
                 all_loss.append(call_loss(y_ts, y_pred))
-            print("\nMy loss : ",C,' ',gamma,' ',epsilon,' ',np.mean(all_loss))
+            print("\nMy loss : ",C,' ',gamma,' ',epsilon,' ',np.mean(all_loss),'-', np.var(all_loss)**2)
 
