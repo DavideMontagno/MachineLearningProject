@@ -112,6 +112,6 @@ for eta in etas:
                 lambda_param) + '_' + str(batch_size))
             fig.savefig('./plots/3i_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
                 lambda_param) + '_' + str(batch_size) + '_' + str(
-                averageLossTR) + '.png', dpi=600)
+                averageLossTS) + '.png', dpi=600)
             plt.close()
             
