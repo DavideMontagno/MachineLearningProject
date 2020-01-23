@@ -64,54 +64,55 @@ nEpoc = 100
 lambdas = [0.0001]
 nUnitLayer = 16
 batch_size = 64
-
-for eta in etas:
-    for alpha in alphas:
-        for lambda_param in lambdas:
-            fig, (plt1, plt2) = plt.subplots(2, 1)
-            #plt1.ylabel('Loss')
-            #plt2.xlabel('Epoch')
-            kfold = KFold(n_splits=10, random_state=None, shuffle=True)
-            cvscores = []
-            nFold = 0
-            forLegend = []
-            for train_index, test_index in kfold.split(X):
-                x_tr = X[train_index]
-                y_tr = Y[train_index]
-                x_ts = X[test_index]
-                y_ts = Y[test_index]
-                history = trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta, alpha, nEpoc, lambda_param,
-                                                  nUnitLayer, 3,
-                                                  batch_size)
-                #score = [history.history['val_loss'][-1], history.history['val_mse'][-1], history.history['val_mae'][-1], history.history['val_coeff_determination'][-1]]
-                cvscores.append([history.history['loss'][-1], history.history['val_loss'][-1]])
-                # Plot training loss values (just half of them)
-                if nFold % 3 == 0:
-                    #plt.subplot(2, 1, 1)
-                    plt1.plot(history.history['loss'])
-                    plt1.plot(history.history['val_loss'])
-                    #plt.subplot(2, 1, 2)
-                    plt2.plot(range(25,nEpoc),history.history['loss'][25:])
-                    plt2.plot(range(25,nEpoc),history.history['val_loss'][25:])
-                    forLegend.append('Train ' + str(nFold))
-                    forLegend.append('Validation ' + str(nFold))
-                nFold += 1
-            averageLoss = 0            
-            averageLossTR = 0
-            for score in cvscores:
-                averageLoss += score[0]
-                averageLossTR += score[1]
-            averageLoss /= len(cvscores)
-            averageLossTR /= len(cvscores)
-            print("Eta: " + str(eta) + "  Alpha: " + str(alpha) + " nEpoch: " + str(nEpoc) + " Lambda: " + str(
-                lambda_param) + " nUnitPerLayer: " + str(nUnitLayer) + " Batch size: " + str(
-                batch_size) + " AverageLoss (on validation set): " + str(
-                averageLossTR))
-            fig.legend(forLegend, loc='center right')
-            fig.suptitle('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
-                lambda_param) + '_' + str(batch_size))
-            fig.savefig('./plots/3i_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
-                lambda_param) + '_' + str(batch_size) + '_' + str(
-                averageLossTS) + '.png', dpi=600)
-            plt.close()
+def cross_validation1():
+    for eta in etas:
+        for alpha in alphas:
+            for lambda_param in lambdas:
+                fig, (plt1, plt2) = plt.subplots(2, 1)
+                #plt1.ylabel('Loss')
+                #plt2.xlabel('Epoch')
+                kfold = KFold(n_splits=10, random_state=None, shuffle=True)
+                cvscores = []
+                nFold = 0
+                forLegend = []
+                for train_index, test_index in kfold.split(X):
+                    x_tr = X[train_index]
+                    y_tr = Y[train_index]
+                    x_ts = X[test_index]
+                    y_ts = Y[test_index]
+                    history = trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta, alpha, nEpoc, lambda_param,
+                                                    nUnitLayer, 3,
+                                                    batch_size)
+                    #score = [history.history['val_loss'][-1], history.history['val_mse'][-1], history.history['val_mae'][-1], history.history['val_coeff_determination'][-1]]
+                    cvscores.append([history.history['loss'][-1], history.history['val_loss'][-1]])
+                    # Plot training loss values (just half of them)
+                    if nFold % 3 == 0:
+                        #plt.subplot(2, 1, 1)
+                        plt1.plot(history.history['loss'])
+                        plt1.plot(history.history['val_loss'])
+                        #plt.subplot(2, 1, 2)
+                        plt2.plot(range(25,nEpoc),history.history['loss'][25:])
+                        plt2.plot(range(25,nEpoc),history.history['val_loss'][25:])
+                        forLegend.append('Train ' + str(nFold))
+                        forLegend.append('Validation ' + str(nFold))
+                    nFold += 1
+                averageLoss = 0            
+                averageLossTR = 0
+                for score in cvscores:
+                    averageLoss += score[0]
+                    averageLossTR += score[1]
+                averageLoss /= len(cvscores)
+                averageLossTR /= len(cvscores)
+                print("Eta: " + str(eta) + "  Alpha: " + str(alpha) + " nEpoch: " + str(nEpoc) + " Lambda: " + str(
+                    lambda_param) + " nUnitPerLayer: " + str(nUnitLayer) + " Batch size: " + str(
+                    batch_size) + " AverageLoss (on validation set): " + str(
+                    averageLossTR))
+                fig.legend(forLegend, loc='center right')
+                fig.suptitle('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
+                    lambda_param) + '_' + str(batch_size))
+                fig.savefig('./plots/3i_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
+                    lambda_param) + '_' + str(batch_size) + '_' + str(
+                    averageLossTR) + '.png', dpi=600)
+                plt.close()
+    return etas
             
