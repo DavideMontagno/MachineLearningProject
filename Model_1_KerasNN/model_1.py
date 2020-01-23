@@ -68,9 +68,7 @@ nEpoc = 100
 lambdas = [0.0001]
 nUnitLayer = 16
 batch_size = 64
-
-
-def cross_validation(etas=[0.001], alphas=[0.85], Epoc=100, lambdas=[0.0001], nUnitLayer=16, batch_size=64):
+def cross_validation1():
     for eta in etas:
         for alpha in alphas:
             for lambda_param in lambdas:
@@ -87,11 +85,10 @@ def cross_validation(etas=[0.001], alphas=[0.85], Epoc=100, lambdas=[0.0001], nU
                     x_ts = X[test_index]
                     y_ts = Y[test_index]
                     history = trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta, alpha, nEpoc, lambda_param,
-                                               nUnitLayer, 3,
-                                               batch_size)
+                                                    nUnitLayer, 3,
+                                                    batch_size)
                     #score = [history.history['val_loss'][-1], history.history['val_mse'][-1], history.history['val_mae'][-1], history.history['val_coeff_determination'][-1]]
-                    cvscores.append(
-                        [history.history['loss'][-1], history.history['val_loss'][-1]])
+                    cvscores.append([history.history['loss'][-1], history.history['val_loss'][-1]])
                     # Plot training loss values (just half of them)
                     if nFold % 3 == 0:
                         #plt.subplot(2, 1, 1)
