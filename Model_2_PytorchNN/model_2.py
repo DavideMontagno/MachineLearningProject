@@ -137,4 +137,4 @@ def cross_validation2():
                         averageLossTs) + '.png', dpi=500)
                     plt.close()
                     print('Completed!')
-    return "ciao2"
+cross_validation2()

@@ -114,5 +114,5 @@ def cross_validation1():
                     lambda_param) + '_' + str(batch_size) + '_' + str(
                     averageLossTR) + '.png', dpi=600)
                 plt.close()
-    return etas
+cross_validation1()
             
