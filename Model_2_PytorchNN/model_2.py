@@ -12,13 +12,13 @@ dataset_tr = numpy.genfromtxt(
 X = dataset_tr[:, 1:-2]
 Y = dataset_tr[:, -2:]
 D_in = 20
-nUnitLayers = [30,35]
+nUnitLayers = [30]
 pyramid=3
 D_out = 2
 batch_size = 64
-etas = [0.003, 0.006, 0.01]
-alphas = [0.8, 0.9]
-lambdas = [0.003,0.01]
+etas = [0.001]
+alphas = [0.85]
+lambdas = [0.003]
 nFold=0
 nEpoch = 100
 splits_kfold = 10
@@ -30,9 +30,10 @@ class Model(torch.nn.Module):
         member variables.
         """
         super(Model, self).__init__()
-        self.hidden1 = torch.nn.Linear(D_in, nUnitLayer, bias=False)
-        self.hidden3 = torch.nn.Linear(nUnitLayer, nUnitLayer - 5, bias=False)
-        self.output = torch.nn.Linear(nUnitLayer - 5, D_out, bias=False)
+        self.hidden1 = torch.nn.Linear(D_in, nUnitLayer)
+        #self.hidden2 = torch.nn.Linear(nUnitLayer, nUnitLayer)
+        self.hidden3 = torch.nn.Linear(nUnitLayer, nUnitLayer )
+        self.output = torch.nn.Linear(nUnitLayer , D_out)
     def forward(self, x):
         """
         In the forward function we accept a Tensor of input data and we must return
@@ -40,6 +41,7 @@ class Model(torch.nn.Module):
         well as arbitrary operators on Tensors.
         """
         h_relu = F.relu(self.hidden1(x))
+        #h_relu2 = F.relu(self.hidden2(h_relu))
         h_relu3 = F.relu(self.hidden3(h_relu))
         y_pred = self.output(h_relu3)
         return y_pred
@@ -112,22 +114,23 @@ for nUnitLayer in nUnitLayers:
                                 print('...Ended phase',step,'of ',splits_kfold) 
                                 step=step+1
                                 print(last_loss_tr,'-',last_loss_ts) 
-                    averageLoss = 0
-                    for cv_value in last_loss_tr:
-                        averageLoss += cv_value
-                    averageLoss /= len(last_loss_tr)
-                    averageLossTs = 0
-                    for cv_value2 in last_loss_ts:
-                        averageLossTs += cv_value2
-                    averageLossTs /= len(last_loss_ts)
                     if nFold % 3 == 0:
-                            plt1.plot(score_tr)
-                            plt1.plot(score_ts)
-                            plt2.plot(range(25,nEpoch),score_tr[25:])
-                            plt2.plot(range(25,nEpoch),score_ts[25:])
-                            forLegend.append('Train ' + str(nFold))
-                            forLegend.append('Validation ' + str(nFold))
+                        plt1.plot(score_tr)
+                        plt1.plot(score_ts)
+                        plt2.plot(range(25,nEpoch),score_tr[25:])
+                        plt2.plot(range(25,nEpoch),score_ts[25:])
+                        forLegend.append('Train ' + str(nFold))
+                        forLegend.append('Validation ' + str(nFold))
                     nFold += 1
+                averageLoss = 0
+                for cv_value in last_loss_tr:
+                        averageLoss += cv_value
+                averageLoss /= len(last_loss_tr)
+                averageLossTs = 0
+                for cv_value2 in last_loss_ts:
+                        averageLossTs += cv_value2
+                averageLossTs /= len(last_loss_ts)
+                    
                 print('Cross-Validation ended successfully!', datetime.now())
                 print("Eta: " + str(eta) + "  Alpha: " + str(alpha) + " nEpoch: " + str(nEpoch) + " Lambda: " + str(
                                     lambda_param) + " nUnitPerLayer: " + str(nUnitLayer) + " Batch size: " + str(
@@ -137,9 +140,9 @@ for nUnitLayer in nUnitLayers:
                 fig.legend(forLegend, loc='center right')
                 fig.suptitle('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
                                 lambda_param) + '_' + str(batch_size))
-                fig.savefig('./plots/MY_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
+                fig.savefig('./plots/learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
                                                                         lambda_param) + '_' + str(batch_size) + '_' + str(nUnitLayer) + 
                                                                         '_' + str(
-                                                                        averageLoss) + '.png', dpi=500)
+                                                                        averageLossTs) + '.png', dpi=500)
                 plt.close()
                 print('Completed!')
