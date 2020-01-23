@@ -13,13 +13,13 @@ X = dataset_tr[:, 1:-2]
 Y = dataset_tr[:, -2:]
 D_in = 20
 nUnitLayers = [30]
-pyramid=3
+pyramid = 3
 D_out = 2
 batch_size = 64
 etas = [0.001]
 alphas = [0.85]
 lambdas = [0.003]
-nFold=0
+nFold = 0
 nEpoch = 100
 splits_kfold = 10
 
@@ -28,8 +28,9 @@ class Model(torch.nn.Module):
     def __init__(self, D_in, nUnitLayer, D_out):
         super(Model, self).__init__()
         self.hidden1 = torch.nn.Linear(D_in, nUnitLayer)
-        self.hidden3 = torch.nn.Linear(nUnitLayer, nUnitLayer )
-        self.output = torch.nn.Linear(nUnitLayer , D_out)
+        self.hidden3 = torch.nn.Linear(nUnitLayer, nUnitLayer)
+        self.output = torch.nn.Linear(nUnitLayer, D_out)
+
     def forward(self, x):
         h_relu = F.relu(self.hidden1(x))
         h_relu3 = F.relu(self.hidden3(h_relu))
@@ -109,25 +110,25 @@ for nUnitLayer in nUnitLayers:
                         score_ts.append(loss_ts.item())
                     last_loss_tr.append(loss.item())
                     last_loss_ts.append(loss_ts.item())
-                    print('...Ended phase',nFold,'of ',splits_kfold) 
-                    print(last_loss_tr[-1],'-',last_loss_ts[-1]) 
+                    print('...Ended phase', nFold, 'of ', splits_kfold)
+                    print(last_loss_tr[-1], '-', last_loss_ts[-1])
                     if nFold % 3 == 0:
                         plt1.plot(score_tr)
                         plt1.plot(score_ts)
-                        plt2.plot(range(25,nEpoch),score_tr[25:])
-                        plt2.plot(range(25,nEpoch),score_ts[25:])
+                        plt2.plot(range(25, nEpoch), score_tr[25:])
+                        plt2.plot(range(25, nEpoch), score_ts[25:])
                         forLegend.append('Train ' + str(nFold))
                         forLegend.append('Validation ' + str(nFold))
                     nFold += 1
                 averageLoss = 0
                 for cv_value in last_loss_tr:
-                        averageLoss += cv_value
+                    averageLoss += cv_value
                 averageLoss /= len(last_loss_tr)
                 averageLossTs = 0
                 for cv_value2 in last_loss_ts:
-                        averageLossTs += cv_value2
+                    averageLossTs += cv_value2
                 averageLossTs /= len(last_loss_ts)
-                    
+
                 print('Cross-Validation ended successfully!', datetime.now())
                 print('Creating plot...')
                 fig.legend(forLegend, loc='center right')
