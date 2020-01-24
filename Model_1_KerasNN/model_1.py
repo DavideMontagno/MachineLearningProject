@@ -62,16 +62,11 @@ def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, l
     return history
 
 
-etas = [0.001]
-alphas = [0.85]
-nEpoc = 100
-lambdas = [0.0001]
-nUnitLayer = 16
-batch_size = 64
-def cross_validation1():
-    for eta in etas:
-        for alpha in alphas:
-            for lambda_param in lambdas:
+
+def cross_validation1( eta, alpha, lambda_param, batch_size, nUnitLayer):
+    #for eta in etas:
+        #for alpha in alphas:
+            #for lambda_param in lambdas:
                 fig, (plt1, plt2) = plt.subplots(2, 1)
                 #plt1.ylabel('Loss')
                 #plt2.xlabel('Epoch')
@@ -103,12 +98,14 @@ def cross_validation1():
                         forLegend.append('Validation ' + str(nFold))
                     nFold += 1
                 averageLoss = 0
-                averageLossTR = 0
+                averageLossTS = 0
                 for score in cvscores:
                     averageLoss += score[0]
-                    averageLossTR += score[1]
+                    averageLossTS += score[1]
                 averageLoss /= len(cvscores)
-                averageLossTR /= len(cvscores)
+                averageLossTS /= len(cvscores)
+                return averageLossTS
+                '''
                 print("Eta: " + str(eta) + "  Alpha: " + str(alpha) + " nEpoch: " + str(nEpoc) + " Lambda: " + str(
                     lambda_param) + " nUnitPerLayer: " + str(nUnitLayer) + " Batch size: " + str(
                     batch_size) + " AverageLoss (on validation set): " + str(
@@ -120,9 +117,61 @@ def cross_validation1():
                     lambda_param) + '_' + str(batch_size) + '_' + str(
                     averageLossTS) + '.png', dpi=600)
                 plt.close()
-        # last computer best parameters
-cross_validation1()
+                '''
+                
+
+
+def best_model1(cross_validation):
+    best_eta = 0.001
+    best_alpha = 0.85
+    best_lambda = 0.0001
+    best_batch_size = 64
+    best_nUnitLayer = 16
+    
+   
+    if(cross_validation):
+        min_loss=float('inf')
+        nUnitLayers = []
+        etas = []
+        alphas = []
+        lambdas = []
+        batch_sizes = []
+        for nUnitLayer in nUnitLayers:
+            for eta in etas:
+                for alpha in alphas:
+                    for _lambda in lambdas:
+                        for batch_size in batch_sizes:
+                                
+                                tmp = cross_validation1( eta, alpha, _lambda, batch_size, nUnitLayer)
+                                if(tmp < min_loss):
+                                    min_loss = tmp
+                                    best_alpha = alpha
+                                    best_batch_size = batch_size
+                                    best_lambda = _lambda
+                                    best_eta = eta
+                                    best_nUnitLayer = nUnitLayer
+
+    return train_and_predict(best_eta, best_alpha, best_lambda, best_batch_size, best_nUnitLayer)
 
 
 
+def train_and_predict( eta, alpha, lambda_param, batch_size, nUnitPerLayer,nLayer=3,nEpoch=100):
+    
+    model = Sequential()
+    #model.add(Dense(20, input_dim=20, kernel_initializer='glorot_normal', activation='relu'))
+    for i in range(0, nLayer):
+        model.add(Dense(nUnitPerLayer - 3*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
+                        activation='relu'))
 
+    model.add(Dense(2, kernel_initializer='glorot_normal', activation='linear'))
+
+    sgd = SGD(learning_rate=eta, momentum=alpha, nesterov=False)
+    #model.compile(optimizer=sgd, loss=euclidean_distance_loss, metrics=['mse', 'mae', coeff_determination])
+    model.compile(optimizer=sgd, loss=euclidean_distance_loss)
+  
+    history = model.fit(X, Y,validation_split=0, epochs=nEpoch, batch_size=batch_size, verbose=0)
+    # score = model.evaluate(x_ts, y_ts, verbose=0)
+    #plot_model(model, to_file='model_now.png',show_shapes=True)
+    dataset_bs = numpy.genfromtxt('../project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
+   
+    return model.predict(dataset_bs[:,1:])

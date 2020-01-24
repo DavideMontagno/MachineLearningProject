@@ -14,11 +14,6 @@ X = dataset_tr[:, 1:-2]
 Y = dataset_tr[:, -2:]
 D_in = 20
 D_out = 2
-#nUnitLayers = [40,35] #A:25,30 D: 35,40
-#batch_sizes = [64,96]
-#etas = [0.001, 0.0009, 0.0005 ] #A:0.001,0.002,0.003,0.004 D: 0.005,0.007,0.009, 0.01
-#alphas = [0.9,0.85,0.8] #0.9,0.85,0.8
-#lambdas = [0.005, 0.007, 0.01] #A: D:0.005, 0.007, 0.01
 nFold = 0
 nEpoch = 100
 splits_kfold = 10
@@ -46,29 +41,6 @@ def init_weights(m):
 
 def loss_fn(y_real, y_pred): return torch.div(
     torch.sum(F.pairwise_distance(y_real, y_pred, p=2)), len(y_real))
-
-
-def test(eta, alpha,  lambda_param, batch_size, nUnits):
-    model = Model(D_in, nUnits, D_out)
-    model.apply(init_weights)
-    model.cuda()
-    optimizer = torch.optim.SGD(
-        model.parameters(), lr=eta, momentum=alpha, weight_decay=lambda_param)
-    for epoch in range(nEpoch):
-        for i in range(int(len(X) / batch_size)):
-                    # TODO requires_grad=True ???
-                    optimizer.zero_grad()
-                    l = i * batch_size
-                    r = (i + 1) * batch_size
-                    x = torch.tensor(list(
-                        X[l:r]), dtype=torch.float, requires_grad=True).cuda(device.type)
-                    y = torch.tensor(list(
-                        Y[l:r]), dtype=torch.float, requires_grad=True).cuda(device.type)
-                    y_pred = model(x)
-                    loss = loss_fn(y, y_pred)
-                    loss.backward()
-                    optimizer.step()
-
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 if(device.type == 'cuda'):
@@ -154,8 +126,10 @@ def cross_validation2(eta, alpha, lambda_param, batch_size, nUnitLayer):
                               datetime.now())
                         print('Average TR:', averageLoss,
                               '- Average TS:', averageLossTs)
-                        
+
+                        '''
                         print('Creating plot...')
+
                         fig.legend(forLegend, loc='center right')
                         fig.suptitle('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
                             lambda_param) + '_' + str(batch_size))
@@ -165,46 +139,68 @@ def cross_validation2(eta, alpha, lambda_param, batch_size, nUnitLayer):
                             averageLossTs) + '.png', dpi=500)
                         plt.close()
                         print('Completed!')
+                        '''
                         return averageLossTs
 
 
-def best_model2():
+def best_model2(cross_validation):
 
-    best_etas = [0.0015]
-    best_alphas = [0.9]
-    best_lambdas = [0.002]
-    best_batch_sizes = [64]
-    nUnitLayers = [40]
-    min_eta = 0
-    min_alpha = 0
-    min_batch = 0
-    min_lambda = 0
-    min_loss = float('inf')
-    min_unit_layer = 0
+    best_eta = 0.0015
+    best_alpha = 0.9
+    best_lambda = 0.002
+    best_batch_size = 64
+    nUnitLayer = 40
+    if(cross_validation):
+        
+        #nUnitLayers = [40,35] #A:25,30 D: 35,40
+        #batch_sizes = [64,96]
+        #etas = [0.001, 0.0009, 0.0005 ] #A:0.001,0.002,0.003,0.004 D: 0.005,0.007,0.009, 0.01
+        #alphas = [0.9,0.85,0.8] #0.9,0.85,0.8
+        #lambdas = [0.005, 0.007, 0.01] #A: D:0.005, 0.007, 0.01
+        min_loss=float('inf')
+        nUnitLayers = []
+        etas = []
+        alphas = []
+        lambdas = []
+        batch_sizes = []
+        for nUnitLayer in nUnitLayers:
+            for eta in etas:
+                for alpha in alphas:
+                    for _lambda in lambdas:
+                        for batch_size in batch_sizes:
+                                
+                                tmp = cross_validation2(
+                                    eta, alpha, _lambda, batch_size, nUnitLayer)
+                                if(tmp < min_loss):
+                                    min_loss = tmp
+                                    best_alpha = alpha
+                                    best_batch_size = batch_size
+                                    best_lambda = _lambda
+                                    best_eta = eta
+                                    best_nUnitLayer = nUnitLayer
+    return make_prediction2(best_eta, best_alpha, best_lambda, best_batch_size, nUnitLayer)
 
-    for nUnitLayer in nUnitLayers:
-        for eta in best_etas:
-            for alpha in best_alphas:
-                for _lambda in best_lambdas:
-                    for batch_size in best_batch_sizes:
-                            tmp = cross_validation2(
-                                eta, alpha, _lambda, batch_size, nUnitLayer)
-                            if(tmp < min_loss):
-                                min_loss = tmp
-                                min_alpha = alpha
-                                min_batch = batch_size
-                                min_lambda = _lambda
-                                min_eta = eta
-                                min_unit_layer = nUnitLayer
-                                print('Choose new model for model selection:', min_eta,
-                                      min_alpha, min_lambda, min_batch, min_unit_layer)
 
-    print('Retraing model')
-    test(min_eta, min_alpha, min_lambda, min_batch, min_unit_layer)
-    print('Retraining completed')
-    print('Selected model successfully!')
-    return [min_eta, min_alpha, min_lambda, min_batch, min_unit_layer, nEpoch]
-    # get parametrs
-    # if not parametrs cross_validation
-    # train model on all the data
-    # return thismodel.predict(ML_cupTS)
+
+def make_prediction2(eta, alpha,  lambda_param, batch_size, _nUnits):
+    model = Model(D_in, _nUnits, D_out)
+    model.apply(init_weights)
+    model.cuda()
+    optimizer = torch.optim.SGD(model.parameters(), lr=eta, momentum=alpha, weight_decay=lambda_param)
+    for epoch in range(nEpoch):
+        for i in range(int(len(X) / batch_size)):
+                    # TODO requires_grad=True ???
+                    optimizer.zero_grad()
+                    l = i * batch_size
+                    r = (i + 1) * batch_size
+                    x = torch.tensor(list(
+                        X[l:r]), dtype=torch.float, requires_grad=True).cuda(device.type)
+                    y = torch.tensor(list(
+                        Y[l:r]), dtype=torch.float, requires_grad=True).cuda(device.type)
+                    y_pred = model(x)
+                    loss = loss_fn(y, y_pred)
+                    loss.backward()
+                    optimizer.step()
+    dataset_bs = numpy.genfromtxt('../project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
+    to_preditct = torch.tensor(list(dataset_bs[:,1:]), dtype=torch.float, requires_grad=True).cuda(device.type)
+    return model(to_preditct).cpu().detach().numpy()

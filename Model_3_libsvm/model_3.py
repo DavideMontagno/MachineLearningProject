@@ -66,14 +66,7 @@ def cross_validation3():
                     all_loss.append(loss_fn( y_ts_cuda, y_pred_cuda))
                     #score = mor.score(x_ts, y_ts)
                     
-                    plt.figure()
-                    s = 50
-                    a = 0.4
-                    plt.scatter(y_ts[:,0],y_ts[:,1],edgecolor='k',c="navy", s=s, marker="s", alpha=a, label="Data")
-                    plt.scatter(y_pred[:,0],y_pred[:,1], c="cornflowerblue", s=s, alpha=a)
-                    plt.title("Support Vector Regression")
-                    plt.legend()
-                    plt.show()
+                    
                     '''
                     print('Creating plot...')
                     plt.savefig('./plots/data_'+str(epsilon)+'_'+str(C)+'_'+str(gamma)+'_'+str(score)+'.png', dpi=1000)
