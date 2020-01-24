@@ -121,11 +121,8 @@ def cross_validation1():
                     averageLossTS) + '.png', dpi=600)
                 plt.close()
         # last computer best parameters
+cross_validation1()
 
-def best_model():
-    # get parametrs
-    # if not parametrs cross_validation
-    # train model on all the data
-    # return thismodel.predict(ML_cupTS)
 
-cross_validation()
+
+
