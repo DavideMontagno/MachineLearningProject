@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import KFold
 import torch
 import torch.nn.functional as F
+from sklearn.ensemble import RandomForestRegressor
 
 dataset_tr = np.genfromtxt(
     '../project/ML-CUP19-TR.csv', delimiter=',', dtype=np.float64)
@@ -20,12 +21,11 @@ X = dataset_tr[:, 1:-2]
 Y = dataset_tr[:, -2:]
 Y1 = dataset_tr[:, -1]
 Y2 = dataset_tr[:, -2]
-
 def loss_fn(y_real, y_pred): return torch.div(
     torch.sum(F.pairwise_distance(y_real, y_pred, p=2)), len(y_real))
 
 splits_kfold = 10
-Cs = [10]
+Cs = [100]
 gammas = [0.05,0.01,0.1]
 epsilons = [0.1]
 
@@ -55,14 +55,38 @@ def cross_validation3():
 
                     #y_pred1 = svr_rbf1.predict(x_ts)
                     #y_pred2 = svr_rbf2.predict(x_ts)
-
-                    mor = MultiOutputRegressor(SVR(kernel='rbf', C=C, gamma=gamma, epsilon=epsilon))
+                    
+                    svr = SVR(kernel='rbf', C=C, gamma=gamma, epsilon=epsilon)
+                    mor = MultiOutputRegressor(svr)
                     mor.fit(x_tr,y_tr)
 
                     y_pred =  mor.predict(x_ts)
-                    y_ts = torch.tensor(y_ts).cuda(device.type)
-                    y_pred = torch.tensor(y_pred).cuda(device.type)
-                    all_loss.append(loss_fn( y_ts, y_pred))
+                    y_ts_cuda = torch.tensor(y_ts).cuda(device.type)
+                    y_pred_cuda = torch.tensor(y_pred).cuda(device.type)
+                    all_loss.append(loss_fn( y_ts_cuda, y_pred_cuda))
+                    #score = mor.score(x_ts, y_ts)
+                    
+                    plt.figure()
+                    s = 50
+                    a = 0.4
+                    plt.scatter(y_ts[:,0],y_ts[:,1],edgecolor='k',c="navy", s=s, marker="s", alpha=a, label="Data")
+                    plt.scatter(y_pred[:,0],y_pred[:,1], c="cornflowerblue", s=s, alpha=a)
+                    plt.title("Support Vector Regression")
+                    plt.legend()
+                    plt.show()
+                    '''
+                    print('Creating plot...')
+                    plt.savefig('./plots/data_'+str(epsilon)+'_'+str(C)+'_'+str(gamma)+'_'+str(score)+'.png', dpi=1000)
+                    plt.close()
+                    print('Completed!')
+                    '''
                 all_loss = torch.tensor(list(all_loss)).cuda(device.type)
                 print("\nMy loss : ",C,' ',gamma,' ',epsilon,'Mean:',torch.mean(all_loss).item(),'Variance:',torch.var(all_loss).item())
+                
+
+
+
+
+
+
 cross_validation3()
