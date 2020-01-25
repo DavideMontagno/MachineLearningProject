@@ -9,7 +9,6 @@ from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
 import os
 
-
 # Just disables the warning about AVX AVX2
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -18,8 +17,6 @@ dataset_tr = numpy.loadtxt(
 
 X = dataset_tr[:, 1:-2]
 Y = dataset_tr[:, -2:]
-
-
 
 def euclidean_distance_loss(y_true, y_pred):
     """
@@ -31,28 +28,18 @@ def euclidean_distance_loss(y_true, y_pred):
     """
     return K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1))
 
-# (nesterov only for batch)
-
-
 def train_and_learningcurve(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, lambda_param=0.01, nUnitPerLayer=20,
                      nLayer=3,
                      batch_size=32):
     model = Sequential()
-    #model.add(Dense(20, input_dim=20, kernel_initializer='glorot_normal', activation='relu'))
     for i in range(0, nLayer):
         model.add(Dense(nUnitPerLayer - 2*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
                         activation='relu'))
-
     model.add(Dense(2, kernel_initializer='glorot_normal', activation='linear'))
-
     sgd = SGD(learning_rate=eta, momentum=alpha, nesterov=False)
-    #model.compile(optimizer=sgd, loss=euclidean_distance_loss, metrics=['mse', 'mae', coeff_determination])
     model.compile(optimizer=sgd, loss=euclidean_distance_loss)
-    #to-do stopping criteria when loss < k
     history = model.fit(x_tr, y_tr, validation_data=(
         x_ts, y_ts), epochs=nEpoch, batch_size=batch_size, verbose=0)
-    # score = model.evaluate(x_ts, y_ts, verbose=0)
-    #plot_model(model, to_file='model_now.png',show_shapes=True)
     return history
 
 
@@ -140,22 +127,13 @@ def best_model1(cross_validation):
 
 
 def train_and_predict( eta, alpha, lambda_param, batch_size, nUnitPerLayer,nEpoch,nLayer=3):
-    
     model = Sequential()
-    #model.add(Dense(20, input_dim=20, kernel_initializer='glorot_normal', activation='relu'))
     for i in range(0, nLayer):
         model.add(Dense(nUnitPerLayer - 3*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
                         activation='relu'))
-
     model.add(Dense(2, kernel_initializer='glorot_normal', activation='linear'))
-
     sgd = SGD(learning_rate=eta, momentum=alpha, nesterov=False)
-    #model.compile(optimizer=sgd, loss=euclidean_distance_loss, metrics=['mse', 'mae', coeff_determination])
     model.compile(optimizer=sgd, loss=euclidean_distance_loss)
-  
     history = model.fit(X, Y,validation_split=0, epochs=nEpoch, batch_size=batch_size, verbose=0)
-    # score = model.evaluate(x_ts, y_ts, verbose=0)
-    #plot_model(model, to_file='model_now.png',show_shapes=True)
     dataset_bs = numpy.genfromtxt('./project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
-   
     return model.predict(dataset_bs[:,1:])
