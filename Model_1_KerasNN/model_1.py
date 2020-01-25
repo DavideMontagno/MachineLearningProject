@@ -14,17 +14,11 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 dataset_tr = numpy.loadtxt(
-    '../project/ML-CUP19-TR.csv', delimiter=',', dtype=numpy.float64)
+    './project/ML-CUP19-TR.csv', delimiter=',', dtype=numpy.float64)
 
 X = dataset_tr[:, 1:-2]
 Y = dataset_tr[:, -2:]
 
-#print(K.sqrt(K.sum(K.square([3,0] - [4,0]), axis=-1)))
-#exit(1)
-'''
-w_initial
-kernel initialization
-'''
 
 
 def euclidean_distance_loss(y_true, y_pred):
@@ -35,18 +29,18 @@ def euclidean_distance_loss(y_true, y_pred):
     :param y_pred: TensorFlow/Theano tensor of the same shape as y_true
     :return: float
     """
-    return K.mean(K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1)))
+    return K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1))
 
 # (nesterov only for batch)
 
 
-def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, lambda_param=0.01, nUnitPerLayer=20,
+def train_and_learningcurve(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, lambda_param=0.01, nUnitPerLayer=20,
                      nLayer=3,
                      batch_size=32):
     model = Sequential()
     #model.add(Dense(20, input_dim=20, kernel_initializer='glorot_normal', activation='relu'))
     for i in range(0, nLayer):
-        model.add(Dense(nUnitPerLayer - 3*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
+        model.add(Dense(nUnitPerLayer - 2*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
                         activation='relu'))
 
     model.add(Dense(2, kernel_initializer='glorot_normal', activation='linear'))
@@ -63,13 +57,8 @@ def trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, l
 
 
 
-def cross_validation1( eta, alpha, lambda_param, batch_size, nUnitLayer):
-    #for eta in etas:
-        #for alpha in alphas:
-            #for lambda_param in lambdas:
+def cross_validation1( eta, alpha, lambda_param, batch_size, nUnitLayer,nEpoc):
                 fig, (plt1, plt2) = plt.subplots(2, 1)
-                #plt1.ylabel('Loss')
-                #plt2.xlabel('Epoch')
                 kfold = KFold(n_splits=10, random_state=None, shuffle=True)
                 cvscores = []
                 nFold = 0
@@ -79,7 +68,7 @@ def cross_validation1( eta, alpha, lambda_param, batch_size, nUnitLayer):
                     y_tr = Y[train_index]
                     x_ts = X[test_index]
                     y_ts = Y[test_index]
-                    history = trainAndEvaluate(x_tr, y_tr, x_ts, y_ts, eta, alpha, nEpoc, lambda_param,
+                    history = train_and_learningcurve(x_tr, y_tr, x_ts, y_ts, eta, alpha, nEpoc, lambda_param,
                                                     nUnitLayer, 3,
                                                     batch_size)
                     #score = [history.history['val_loss'][-1], history.history['val_mse'][-1], history.history['val_mae'][-1], history.history['val_coeff_determination'][-1]]
@@ -104,46 +93,41 @@ def cross_validation1( eta, alpha, lambda_param, batch_size, nUnitLayer):
                     averageLossTS += score[1]
                 averageLoss /= len(cvscores)
                 averageLossTS /= len(cvscores)
-                return averageLossTS
-                '''
-                print("Eta: " + str(eta) + "  Alpha: " + str(alpha) + " nEpoch: " + str(nEpoc) + " Lambda: " + str(
-                    lambda_param) + " nUnitPerLayer: " + str(nUnitLayer) + " Batch size: " + str(
-                    batch_size) + " AverageLoss (on validation set): " + str(
-                    averageLossTR))
+                
+                
                 fig.legend(forLegend, loc='center right')
                 fig.suptitle('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
                     lambda_param) + '_' + str(batch_size))
-                fig.savefig('./plots/3i_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
+                fig.savefig('./plots_final/Keras_Validation/Keras_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
                     lambda_param) + '_' + str(batch_size) + '_' + str(
-                    averageLossTS) + '.png', dpi=600)
+                    averageLossTS) + '_'+str(nUnitLayer)+'.png', dpi=600)
                 plt.close()
-                '''
+                return averageLossTS
                 
 
 
 def best_model1(cross_validation):
     best_eta = 0.001
     best_alpha = 0.85
-    best_lambda = 0.0001
+    best_lambda = 0.0005
     best_batch_size = 64
-    best_nUnitLayer = 16
-    
+    best_nUnitLayer = 25
+    nEpoch = 85
    
     if(cross_validation):
         min_loss=float('inf')
-        nUnitLayers = []
-        etas = []
-        alphas = []
-        lambdas = []
-        batch_sizes = []
+        nUnitLayers = [25]
+        etas = [0.0009,0.001,0.0015]
+        alphas = [0.6,0.65,0.7]
+        lambdas = [0.0009,0.001,0.0015]
+        batch_sizes = [64,96]
         for nUnitLayer in nUnitLayers:
             for eta in etas:
                 for alpha in alphas:
                     for _lambda in lambdas:
                         for batch_size in batch_sizes:
-                                
-                                tmp = cross_validation1( eta, alpha, _lambda, batch_size, nUnitLayer)
-                                if(tmp < min_loss):
+                            tmp = cross_validation1( eta, alpha, _lambda, batch_size, nUnitLayer,nEpoch)
+                            if(tmp < min_loss):
                                     min_loss = tmp
                                     best_alpha = alpha
                                     best_batch_size = batch_size
@@ -151,11 +135,11 @@ def best_model1(cross_validation):
                                     best_eta = eta
                                     best_nUnitLayer = nUnitLayer
 
-    return train_and_predict(best_eta, best_alpha, best_lambda, best_batch_size, best_nUnitLayer)
+    return train_and_predict(best_eta, best_alpha, best_lambda, best_batch_size, best_nUnitLayer,nEpoch)
 
 
 
-def train_and_predict( eta, alpha, lambda_param, batch_size, nUnitPerLayer,nLayer=3,nEpoch=100):
+def train_and_predict( eta, alpha, lambda_param, batch_size, nUnitPerLayer,nEpoch,nLayer=3):
     
     model = Sequential()
     #model.add(Dense(20, input_dim=20, kernel_initializer='glorot_normal', activation='relu'))
@@ -172,6 +156,6 @@ def train_and_predict( eta, alpha, lambda_param, batch_size, nUnitPerLayer,nLaye
     history = model.fit(X, Y,validation_split=0, epochs=nEpoch, batch_size=batch_size, verbose=0)
     # score = model.evaluate(x_ts, y_ts, verbose=0)
     #plot_model(model, to_file='model_now.png',show_shapes=True)
-    dataset_bs = numpy.genfromtxt('../project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
+    dataset_bs = numpy.genfromtxt('./project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
    
     return model.predict(dataset_bs[:,1:])

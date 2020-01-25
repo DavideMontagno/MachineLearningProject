@@ -9,7 +9,7 @@ import sys
 
 # inizialization
 dataset_tr = numpy.genfromtxt(
-    '../project/ML-CUP19-TR.csv', delimiter=',', dtype=numpy.float64)
+    './project/ML-CUP19-TR.csv', delimiter=',', dtype=numpy.float64)
 X = dataset_tr[:, 1:-2]
 Y = dataset_tr[:, -2:]
 D_in = 20
@@ -127,19 +127,17 @@ def cross_validation2(eta, alpha, lambda_param, batch_size, nUnitLayer):
                         print('Average TR:', averageLoss,
                               '- Average TS:', averageLossTs)
 
-                        '''
+                        
                         print('Creating plot...')
-
                         fig.legend(forLegend, loc='center right')
                         fig.suptitle('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
                             lambda_param) + '_' + str(batch_size))
-                        fig.savefig('./plots/less_values/TOPlearning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
+                        fig.savefig('./plots_final/Pytorch_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
                             lambda_param) + '_' + str(batch_size) + '_' + str(nUnitLayer) +
                             '_' + str(
                             averageLossTs) + '.png', dpi=500)
                         plt.close()
                         print('Completed!')
-                        '''
                         return averageLossTs
 
 
@@ -151,18 +149,12 @@ def best_model2(cross_validation):
     best_batch_size = 64
     nUnitLayer = 40
     if(cross_validation):
-        
-        #nUnitLayers = [40,35] #A:25,30 D: 35,40
-        #batch_sizes = [64,96]
-        #etas = [0.001, 0.0009, 0.0005 ] #A:0.001,0.002,0.003,0.004 D: 0.005,0.007,0.009, 0.01
-        #alphas = [0.9,0.85,0.8] #0.9,0.85,0.8
-        #lambdas = [0.005, 0.007, 0.01] #A: D:0.005, 0.007, 0.01
         min_loss=float('inf')
-        nUnitLayers = []
-        etas = []
-        alphas = []
-        lambdas = []
-        batch_sizes = []
+        nUnitLayers = [40]
+        etas = [0.0015, 0.002]
+        alphas = [0.9,0.85,0.8]
+        lambdas = [0.002, 0.005, 0.007]
+        batch_sizes = [64]
         for nUnitLayer in nUnitLayers:
             for eta in etas:
                 for alpha in alphas:
@@ -201,6 +193,6 @@ def make_prediction2(eta, alpha,  lambda_param, batch_size, _nUnits):
                     loss = loss_fn(y, y_pred)
                     loss.backward()
                     optimizer.step()
-    dataset_bs = numpy.genfromtxt('../project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
+    dataset_bs = numpy.genfromtxt('./project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
     to_preditct = torch.tensor(list(dataset_bs[:,1:]), dtype=torch.float, requires_grad=True).cuda(device.type)
     return model(to_preditct).cpu().detach().numpy()
