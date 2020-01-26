@@ -3,6 +3,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD
 from keras import regularizers
+from keras.initializers import RandomNormal
 
 dataset_train1 = loadtxt('dataset/monks-1.train',
                          delimiter=' ', usecols=range(1, 8))
@@ -28,7 +29,7 @@ def solve_monk(dataset_tr, dataset_ts, nUnit, lr, momntum, nEpoch, batch_size, l
 
     model = Sequential()
     model.add(
-        Dense(nUnit, input_dim=6, kernel_initializer='glorot_normal', activation='sigmoid'))
+        Dense(nUnit, input_dim=6, kernel_initializer=RandomNormal(mean=0.0, stddev=0.005, seed=42), activation='sigmoid', kernel_regularizer=regularizers.l2(lambda_)))
     model.add(Dense(1, activation='linear'))
 
     sgd = SGD(lr=lr, momentum=momntum, nesterov=False)
@@ -41,7 +42,7 @@ def solve_monk(dataset_tr, dataset_ts, nUnit, lr, momntum, nEpoch, batch_size, l
     print('Loss: %.2f' % loss, 'Accuracy: %.2f' % (accuracy*100))
 
 
-solve_monk(dataset_train1, dataset_test1, 12, 0.045, 0.8, 120, 16, 0.0005)
+solve_monk(dataset_train1, dataset_test1, 30, 0.035, 0.85, 100, 16, 0.001)
 
 #solve_monk(dataset_train1, dataset_test1, 15, 0.035, 0.8, 220, 10, 0.0005)
 

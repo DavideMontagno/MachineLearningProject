@@ -31,13 +31,20 @@ def create_plot(y_pred,model_index):
    
    
 print('Using Neural Network in Keras...')
-create_plot(best_model1(True),1)  
+returnBestModel1 = best_model1(False)
+averageLoss_final1 = returnBestModel1[1]
+print("TEST ERROR 1 = ",averageLoss_final1)
+create_plot(returnBestModel1[0],1)  
 print('Prediction done!')   
 print('Using Neural Network in Pytorch...')
-#create_plot(best_model2(False),2)
+returnBestModel2 = best_model2(False)
+averageLoss_final2 = returnBestModel2[1]
+print("TEST ERROR 2 = ",averageLoss_final2)
+create_plot(returnBestModel2[0],2)  
 print('Prediction done!')  
 print('Using Support Vectors Machine..') 
-#create_plot(best_model3(False),3)
+returnBestModel3 = best_model3(False)
+averageLoss_final3 = returnBestModel3[1]
+print("TEST ERROR 3 = ",averageLoss_final3)
+create_plot(returnBestModel3[0],3)  
 print('Prediction done!')  
-
-

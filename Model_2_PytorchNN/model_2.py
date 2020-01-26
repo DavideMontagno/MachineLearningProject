@@ -82,10 +82,10 @@ def cross_validation2(eta, alpha, lambda_param, batch_size, nUnitLayer):
                             loss_ts = torch.zeros(1)
                             for epoch in range(nEpoch):
                                 for i in range(int(len(x_tr) / batch_size)):
-                                    # TODO requires_grad=True ???
                                     optimizer.zero_grad()
                                     l = i * batch_size
                                     r = (i + 1) * batch_size
+                                    # Slow TODO: work with tensors from the beginning
                                     x = torch.tensor(list(
                                         x_tr[l:r]), dtype=torch.float, requires_grad=True).cuda(device.type)
                                     y = torch.tensor(list(
@@ -194,5 +194,11 @@ def make_prediction2(eta, alpha,  lambda_param, batch_size, _nUnits):
                     loss.backward()
                     optimizer.step()
     dataset_bs = numpy.genfromtxt('./project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
+    data_test = numpy.genfromtxt(
+        './project/ML-our_test_set.csv', delimiter=',', dtype=numpy.float64)
+    X_test = data_test[:, 1:-2]
+    Y_test = torch.tensor(list(data_test[:, -2:]), dtype=torch.float, requires_grad=True).cuda(device.type)
     to_preditct = torch.tensor(list(dataset_bs[:,1:]), dtype=torch.float, requires_grad=True).cuda(device.type)
-    return model(to_preditct).cpu().detach().numpy()
+    to_preditct_test = torch.tensor(list(X_test), dtype=torch.float, requires_grad=True).cuda(device.type)
+    y_predicted = model(to_preditct_test)
+    return (model(to_preditct).cpu().detach().numpy(), loss_fn(y_predicted,Y_test).item())
