@@ -59,8 +59,7 @@ def best_model3(cross_validation):
                     best_epsilon=epsilon
                     best_gamma = gamma
 
-    print(best_C,'-',best_gamma,'-',best_epsilon)  
-    plot_learning_curve(best_C,best_gamma,best_epsilon)
+    #plot_learning_curve(best_C,best_gamma,best_epsilon)
     svr = SVR(kernel='rbf', C=best_C, gamma=best_gamma, epsilon=best_epsilon)
     mor = MultiOutputRegressor(svr)
     mor.fit(X, Y)
@@ -83,6 +82,7 @@ def plot_learning_curve(C,gamma,epsilon):
         x_ts = X[test_index]
         y_ts = Y[test_index]
         all_loss = []
+        all_loss_tr = []
         n_examples = []
         for step in range(2, 102, 2):
             ind_x = int(step * (len(x_tr)/100))
@@ -92,16 +92,20 @@ def plot_learning_curve(C,gamma,epsilon):
             svr = SVR(C=C,gamma=gamma,epsilon=epsilon,verbose=False)
             mor = MultiOutputRegressor(svr)
             mor.fit(this_x_tr, this_y_tr)
+            y_pred_tr= mor.predict(this_x_tr)
             y_pred = mor.predict(x_ts)
             this_loss = loss_fn(y_pred, y_ts)
+            this_loss_tr = loss_fn(y_pred_tr, this_y_tr)
             n_examples.append(int(step * (len(x_tr)/100)))
             all_loss.append(this_loss)
-        plt.plot( n_examples, all_loss)
+            all_loss_tr.append(this_loss_tr)
+        plt.plot( n_examples, all_loss_tr)
+        plt.plot( n_examples, all_loss,'--')
         plt.title("Learning Curve SVM")
         plt.xlabel("Number of training examples")
         plt.ylabel("Loss (Mean Euclidian Distance)")
-        plt.legend(["Loss on validation set"])
-        plt.savefig('./plots_final/svm_learning_curve_' + str(C) + '_' + str(gamma) +'.png', dpi=500)
+        plt.legend(["Loss on training set","Loss on validation set"])
+        plt.savefig('./plots_final/svm_learning_curve_' + str(C) + '_' + str(gamma) +'_'+str(epsilon)+'.png', dpi=500)
         plt.close()
         return
 

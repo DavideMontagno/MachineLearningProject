@@ -94,15 +94,15 @@ def best_model1(cross_validation):
     best_lambda = 0.0005
     best_batch_size = 64
     best_nUnitLayer = 25
-    nEpoch = 85
-
+    nEpoch = 160
+   
     if(cross_validation):
         min_loss = float('inf')
         nUnitLayers = [25]
         etas = [0.0009, 0.001, 0.0015]
         alphas = [0.6, 0.65, 0.7]
         lambdas = [0.0009, 0.001, 0.0015]
-        batch_sizes = [64, 96]
+        batch_sizes = [64]
         for nUnitLayer in nUnitLayers:
             for eta in etas:
                 for alpha in alphas:

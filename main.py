@@ -2,6 +2,7 @@ from Model_2_PytorchNN.model_2 import best_model2
 from Model_1_KerasNN.model_1 import best_model1
 from Model_3_ScikitSVM.model_3 import best_model3
 import matplotlib.pyplot as plt
+import time
 
 
 def numbers_to_Models(argument): 
@@ -28,6 +29,7 @@ def create_plot(y_pred,model_index):
     if(model_index==2):
         plt.savefig('./plots_final/Pytorch_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
     if(model_index==3): plt.savefig('./plots_final/SVM_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
+    plt.close()
    
    
 print('Using Neural Network in Keras...')
