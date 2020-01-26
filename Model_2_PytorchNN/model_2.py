@@ -15,7 +15,6 @@ Y = dataset_tr[:, -2:]
 D_in = 20
 D_out = 2
 nFold = 0
-nEpoch = 100
 splits_kfold = 10
 
 
@@ -148,6 +147,7 @@ def best_model2(cross_validation):
     best_lambda = 0.002
     best_batch_size = 64
     nUnitLayer = 40
+    nEpoch=120
     if(cross_validation):
         min_loss=float('inf')
         nUnitLayers = [40]
@@ -170,16 +170,18 @@ def best_model2(cross_validation):
                                     best_lambda = _lambda
                                     best_eta = eta
                                     best_nUnitLayer = nUnitLayer
-    return make_prediction2(best_eta, best_alpha, best_lambda, best_batch_size, nUnitLayer)
+    return make_prediction2(best_eta, best_alpha, best_lambda, best_batch_size, nUnitLayer,nEpoch)
 
 
 
-def make_prediction2(eta, alpha,  lambda_param, batch_size, _nUnits):
+def make_prediction2(eta, alpha,  lambda_param, batch_size, _nUnits,nEpoch):
     model = Model(D_in, _nUnits, D_out)
     model.apply(init_weights)
     model.cuda()
     optimizer = torch.optim.SGD(model.parameters(), lr=eta, momentum=alpha, weight_decay=lambda_param)
+    all_loss = []
     for epoch in range(nEpoch):
+        loss = torch.zeros(1)
         for i in range(int(len(X) / batch_size)):
                     # TODO requires_grad=True ???
                     optimizer.zero_grad()
@@ -193,6 +195,17 @@ def make_prediction2(eta, alpha,  lambda_param, batch_size, _nUnits):
                     loss = loss_fn(y, y_pred)
                     loss.backward()
                     optimizer.step()
+        all_loss.append(loss.item())
+    plt.plot(all_loss) 
+    plt.title("Final model2 Pytorch")
+    plt.legend(["Learning curve"])
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.savefig('./plots_final/FinalPytorch_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
+                            lambda_param) + '_' + str(batch_size) + '_' + str(_nUnits) +
+                            '_' + str(
+                            all_loss[-1]) + '.png', dpi=500)   
+    plt.close()                     
     dataset_bs = numpy.genfromtxt('./project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
     to_preditct = torch.tensor(list(dataset_bs[:,1:]), dtype=torch.float, requires_grad=True).cuda(device.type)
     return model(to_preditct).cpu().detach().numpy()

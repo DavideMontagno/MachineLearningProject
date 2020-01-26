@@ -112,15 +112,15 @@ def best_model1(cross_validation):
     best_lambda = 0.0005
     best_batch_size = 64
     best_nUnitLayer = 25
-    nEpoch = 85
+    nEpoch = 150
    
     if(cross_validation):
         min_loss=float('inf')
         nUnitLayers = [25]
         etas = [0.0009,0.001,0.0015]
-        alphas = [0.6,0.65,0.7]
+        alphas = [0.7,0.75 ]
         lambdas = [0.0009,0.001,0.0015]
-        batch_sizes = [64,96]
+        batch_sizes = [64]
         for nUnitLayer in nUnitLayers:
             for eta in etas:
                 for alpha in alphas:
@@ -154,8 +154,16 @@ def train_and_predict( eta, alpha, lambda_param, batch_size, nUnitPerLayer,nEpoc
     model.compile(optimizer=sgd, loss=euclidean_distance_loss)
   
     history = model.fit(X, Y,validation_split=0, epochs=nEpoch, batch_size=batch_size, verbose=0)
-    # score = model.evaluate(x_ts, y_ts, verbose=0)
-    #plot_model(model, to_file='model_now.png',show_shapes=True)
+    plt.plot(history.history['loss']) 
+    plt.title("Final model1 Keras")
+    plt.legend(["Learning curve"])
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.savefig('./plots_final/FinalKeras_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(
+                            lambda_param) + '_' + str(batch_size) + '_' + str(nUnitPerLayer) +
+                            '_' + str(
+                            history.history['loss'][-1]) + '.png', dpi=500) 
+    plt.close()
     dataset_bs = numpy.genfromtxt('./project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
    
     return model.predict(dataset_bs[:,1:])

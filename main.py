@@ -2,6 +2,7 @@ from Model_2_PytorchNN.model_2 import best_model2
 from Model_1_KerasNN.model_1 import best_model1
 from Model_3_ScikitSVM.model_3 import best_model3
 import matplotlib.pyplot as plt
+import time
 
 
 def numbers_to_Models(argument): 
@@ -28,16 +29,26 @@ def create_plot(y_pred,model_index):
     if(model_index==2):
         plt.savefig('./plots_final/Pytorch_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
     if(model_index==3): plt.savefig('./plots_final/SVM_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
+    plt.close()
    
    
 print('Using Neural Network in Keras...')
-create_plot(best_model1(True),1)  
+start = time.time()
+create_plot(best_model1(False),1)  
+end = time.time()
+print('Keras:',end-start)
 print('Prediction done!')   
 print('Using Neural Network in Pytorch...')
-#create_plot(best_model2(False),2)
+start = time.time()
+create_plot(best_model2(False),2)
+end = time.time()
+print('Pytorch:',end-start)
 print('Prediction done!')  
 print('Using Support Vectors Machine..') 
-#create_plot(best_model3(False),3)
+start = time.time()
+create_plot(best_model3(False),3)
+end = time.time()
+print('SVR:',end-start)
 print('Prediction done!')  
 
 
