@@ -1,9 +1,11 @@
+import numpy
 from numpy import loadtxt
 from keras.models import Sequential
 from keras.callbacks import Callback
 from keras.layers import Dense
 from keras.optimizers import SGD
 import matplotlib.pyplot as plt
+
 
 dataset_train1 = loadtxt('./dataset/monks-1.train',
                          delimiter=' ', usecols=range(1, 8))
@@ -22,7 +24,7 @@ dataset_test3 = loadtxt('./dataset/monks-3.test',
 
 
 class EarlyStoppingByAccuracy(Callback):
-    def __init__(self, monitor='accuracy', value=0.98, verbose=0):
+    def __init__(self, monitor='accuracy', value=1.0, verbose=0):
         super(Callback, self).__init__()
         self.monitor = monitor
         self.value = value
@@ -33,35 +35,139 @@ class EarlyStoppingByAccuracy(Callback):
 
         if current >= self.value:
             self.model.stop_training = True
+            print('Finded best accuracy!')
 
 
 early_stopping = EarlyStoppingByAccuracy(
-    monitor='acc', value=1.0, verbose=1)
+    monitor='accuracy', value=1.0, verbose=1)
 
+
+def encoding(x):
+    result = []
+    if(x[0] == 1):
+         
+         result.append(0)
+         result.append(0)
+         result.append(1)
+    if(x[0] == 2):
+        result.append(0)
+        result.append(1)
+        result.append(0)
+    if(x[0]==3):
+        result.append(1)
+        result.append(0)
+        result.append(0)
+    if(x[1] == 1):
+         result.append(0)
+         result.append(0)
+         result.append(1)
+    if(x[1] == 2):
+        result.append(0)
+        result.append(1)
+        result.append(0)
+    if(x[1]==3):
+        result.append(1)
+        result.append(0)
+        result.append(0)
+    if(x[2] == 1):
+         result.append(0)
+         result.append(1)
+    if(x[2] == 2):
+        result.append(1)
+        result.append(0)
+    if(x[3] == 1):
+         result.append(0)
+         result.append(0)
+         result.append(1)
+    if(x[3] == 2):
+        result.append(0)
+        result.append(1)
+        result.append(0)
+    if(x[3]==3):
+        result.append(1)
+        result.append(0)
+        result.append(0)
+    if(x[4] == 1):
+        result.append(0)
+        result.append(0)
+        result.append(0)
+        result.append(1)
+    if(x[4] == 2):
+        result.append(0)
+        result.append(0)
+        result.append(1)
+        result.append(0)
+    if(x[4]==3):
+        result.append(0)
+        result.append(1)
+        result.append(0)
+        result.append(0)
+    if(x[4]==4):
+        result.append(1)
+        result.append(0)
+        result.append(0)
+        result.append(0)
+    if(x[5] == 1):
+         result.append(0)
+         result.append(1)
+    if(x[5] == 2):
+        result.append(1)
+        result.append(0)
+    return result
 
 def monk_solve_plot(train, plotted, eta, alpha, batch_size, nUnit, nEpoch):
     x = train[:, 1:7]
+    new_x = []
+    for i in range(len(x)):
+        new_x.append( encoding(x[i]))
+    x = numpy.array([numpy.array(xi) for xi in new_x])
     y = train[:, 0]
 
     model = Sequential()
-    model.add(Dense(nUnit, input_dim=6, kernel_initializer='random_normal',
-                    activation='sigmoid'))
-    model.add(Dense(1, activation='linear'))
+    model.add(Dense(nUnit, input_dim=17, kernel_initializer="glorot_normal",
+                    activation='tanh'))
+    model.add(Dense(1, activation='sigmoid'))
 
     sgd = SGD(lr=eta, momentum=alpha, nesterov=False)
     model.compile(optimizer=sgd, loss='mean_squared_error',
                   metrics=['accuracy'])
     history = model.fit(x, y, validation_split=0, epochs=nEpoch, callbacks=[
-        early_stopping], batch_size=batch_size, verbose=1)
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['acc'], '--')
-    plt.legend(['Loss on training set', 'Loss on validation set'],
-               loc='center right')
-    plt.savefig('./' + str(plotted)+'_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(batch_size) +
-                '_' + str(nUnit) + '_' + str(history.history['loss'][-1])+'_'+str(history.history['acc'][-1])+'.png', dpi=600)
-    plt.close()
+        early_stopping], verbose=0)
+    if(history.history['accuracy'][-1]==1.0):
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['accuracy'], '--')
+        plt.legend(['Loss on training set', 'Loss on validation set'],
+                loc='center right')
+        plt.savefig('./' + str(plotted)+'_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoch) + '_' + str(batch_size) +
+                    '_' + str(nUnit) + '_' + str(history.history['loss'][-1])+'_'+str(history.history['accuracy'][-1])+'.png', dpi=600)
+        plt.close()
+    return history.history['accuracy'][-1]
 
 
-#monk_solve_plot(dataset_test1, 1, 0.05, 0.8, 20, 8, 300)
-monk_solve_plot(dataset_test2, 2, 0.05, 0.75, 30, 10, 300)
+
+        
+
+
+def start(set_):
+    
+    nUnitLayers = [4,5,6,7,8]
+    etas = [0.9,0.85,0.8]
+    alphas = [0.9,0.85,0.8,0.7,0.75,0.65,0.6]
+    nEpoch = 400 
+    batch_sizes = [len(dataset_train2)]
+    plotted = 0
+    for nUnitLayer in nUnitLayers:
+        for eta in etas:
+            for alpha in alphas:
+                for batch_size in batch_sizes:
+                    print("Working on:",eta,alpha,batch_size,nUnitLayer,nEpoch)
+                    accuracy = monk_solve_plot(set_, 2, eta, alpha, batch_size, nUnitLayer, nEpoch)
+                    print("Got:",accuracy*100)
+                    if(accuracy==1.0):
+                        print("Best values:",eta,alpha,batch_size,nUnitLayer,nEpoch)
+                        exit(1)
+    
 #monk_solve_plot(dataset_test3, 3, 0.05, 0.85, 15, 15, 225)
+start(dataset_train1)
+start(dataset_train2)
+start(dataset_train3)
