@@ -47,7 +47,7 @@ if(device.type == 'cuda'):
           'enabled:', torch.backends.cudnn.enabled)
 
 
-def cross_validation2(eta, alpha, lambda_param, batch_size, nUnitLayer):
+def cross_validation2(eta, alpha, lambda_param, batch_size, nUnitLayer,nEpoch):
                         fig, (plt1, plt2) = plt.subplots(2, 1)
                         nFold = 0
                         forLegend = []
@@ -162,7 +162,7 @@ def best_model2(cross_validation):
                         for batch_size in batch_sizes:
                                 
                                 tmp = cross_validation2(
-                                    eta, alpha, _lambda, batch_size, nUnitLayer)
+                                    eta, alpha, _lambda, batch_size, nUnitLayer,nEpoch)
                                 if(tmp < min_loss):
                                     min_loss = tmp
                                     best_alpha = alpha
