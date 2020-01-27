@@ -33,20 +33,29 @@ def create_plot(y_pred,model_index):
    
    
 print('Using Neural Network in Keras...')
+start = time.time()
 returnBestModel1 = best_model1(False)
 averageLoss_final1 = returnBestModel1[1]
 print("TEST ERROR 1 = ",averageLoss_final1)
 create_plot(returnBestModel1[0],1)  
-print('Prediction done!')   
+end = time.time()
+print('Prediction done!')  
+print('Ended in: ',end-start,'seconds') 
 print('Using Neural Network in Pytorch...')
+start = time.time()
 returnBestModel2 = best_model2(False)
 averageLoss_final2 = returnBestModel2[1]
 print("TEST ERROR 2 = ",averageLoss_final2)
 create_plot(returnBestModel2[0],2)  
+end = time.time()
 print('Prediction done!')  
+print('Ended in: ',end-start,'seconds') 
 print('Using Support Vectors Machine..') 
+start = time.time()
 returnBestModel3 = best_model3(False)
 averageLoss_final3 = returnBestModel3[1]
 print("TEST ERROR 3 = ",averageLoss_final3)
 create_plot(returnBestModel3[0],3)  
+end = time.time()
 print('Prediction done!')  
+print('Ended in: ',end-start,'seconds') 

@@ -64,8 +64,8 @@ def best_model3(cross_validation):
     mor = MultiOutputRegressor(svr)
     mor.fit(X, Y)
     dataset_bs = np.genfromtxt('./project/ML-CUP19-TS.csv', delimiter=',', dtype=np.float64)
-    data_test = numpy.genfromtxt(
-        './project/ML-our_test_set.csv', delimiter=',', dtype=numpy.float64)
+    data_test = np.genfromtxt(
+        './project/ML-our_test_set.csv', delimiter=',', dtype=np.float64)
     X_test = data_test[:, 1:-2]
     Y_test = data_test[:, -2:]
     y_pred_test = mor.predict(X_test)

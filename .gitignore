@@ -2,3 +2,4 @@ venv/
 .idea
 .vscode
 *.png
+*.pyc
