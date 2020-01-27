@@ -1,3 +1,4 @@
+import numpy
 from numpy import loadtxt
 from keras.models import Sequential
 from keras.callbacks import Callback
@@ -5,6 +6,7 @@ from keras.layers import Dense
 from keras.regularizers import l2
 from keras.optimizers import SGD
 import matplotlib.pyplot as plt
+
 
 dataset_train1 = loadtxt('./dataset/monks-1.train',
                          delimiter=' ', usecols=range(1, 8))
@@ -34,19 +36,97 @@ class EarlyStoppingByAccuracy(Callback):
 
         if current >= self.value:
             self.model.stop_training = True
+            print('Finded best accuracy!')
 
 
 early_stopping = EarlyStoppingByAccuracy(
-    monitor='acc', value=1.0, verbose=1)
+    monitor='accuracy', value=1.0, verbose=1)
 
+
+def encoding(x):
+    result = []
+    if(x[0] == 1):
+         
+         result.append(0)
+         result.append(0)
+         result.append(1)
+    if(x[0] == 2):
+        result.append(0)
+        result.append(1)
+        result.append(0)
+    if(x[0]==3):
+        result.append(1)
+        result.append(0)
+        result.append(0)
+    if(x[1] == 1):
+         result.append(0)
+         result.append(0)
+         result.append(1)
+    if(x[1] == 2):
+        result.append(0)
+        result.append(1)
+        result.append(0)
+    if(x[1]==3):
+        result.append(1)
+        result.append(0)
+        result.append(0)
+    if(x[2] == 1):
+         result.append(0)
+         result.append(1)
+    if(x[2] == 2):
+        result.append(1)
+        result.append(0)
+    if(x[3] == 1):
+         result.append(0)
+         result.append(0)
+         result.append(1)
+    if(x[3] == 2):
+        result.append(0)
+        result.append(1)
+        result.append(0)
+    if(x[3]==3):
+        result.append(1)
+        result.append(0)
+        result.append(0)
+    if(x[4] == 1):
+        result.append(0)
+        result.append(0)
+        result.append(0)
+        result.append(1)
+    if(x[4] == 2):
+        result.append(0)
+        result.append(0)
+        result.append(1)
+        result.append(0)
+    if(x[4]==3):
+        result.append(0)
+        result.append(1)
+        result.append(0)
+        result.append(0)
+    if(x[4]==4):
+        result.append(1)
+        result.append(0)
+        result.append(0)
+        result.append(0)
+    if(x[5] == 1):
+         result.append(0)
+         result.append(1)
+    if(x[5] == 2):
+        result.append(1)
+        result.append(0)
+    return result
 
 def monk_solve_plot(train, plotted, eta, alpha, batch_size, nUnit, nEpoch, lambda_param):
     x = train[:, 1:7]
+    new_x = []
+    for i in range(len(x)):
+        new_x.append( encoding(x[i]))
+    x = numpy.array([numpy.array(xi) for xi in new_x])
     y = train[:, 0]
 
     model = Sequential()
-    model.add(Dense(nUnit, input_dim=6, kernel_initializer='glorot_normal',
-                    activation='sigmoid',  kernel_regularizer=l2(lambda_param)))
+    model.add(Dense(nUnit, input_dim=17, kernel_initializer="glorot_normal",
+                    activation='tanh'))
     model.add(Dense(1, activation='sigmoid'))
 
     sgd = SGD(lr=eta, momentum=alpha, nesterov=False)
