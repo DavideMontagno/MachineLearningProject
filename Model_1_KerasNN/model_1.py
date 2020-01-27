@@ -33,7 +33,7 @@ def train_and_learningcurve(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch
                      batch_size=32):
     model = Sequential()
     for i in range(0, nLayer):
-        model.add(Dense(nUnitPerLayer - 2*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
+        model.add(Dense(nUnitPerLayer - 3*i, kernel_regularizer=l2(lambda_param), kernel_initializer='glorot_normal',
                         activation='relu'))
     model.add(Dense(2, kernel_initializer='glorot_normal', activation='linear'))
     sgd = SGD(learning_rate=eta, momentum=alpha, nesterov=False)
@@ -146,4 +146,5 @@ def train_and_predict( eta, alpha, lambda_param, batch_size, nUnitPerLayer,nEpoc
                             history.history['loss'][-1]) + '.png', dpi=500) 
     plt.close()
     dataset_bs = numpy.genfromtxt('./project/ML-CUP19-TS.csv', delimiter=',', dtype=numpy.float64)
+    dataset_test_final = numpy.genfromtxt('./project/ML-our_test_set.csv', delimiter=',', dtype=numpy.float64)
     return model.predict(dataset_bs[:,1:])
