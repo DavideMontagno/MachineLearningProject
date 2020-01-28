@@ -38,7 +38,8 @@ def init_weights(m):
         torch.nn.init.xavier_uniform_(m.weight, gain=1.0)
 
 
-def loss_fn(y_real, y_pred): return torch.div(
+def loss_fn(y_real, y_pred): 
+    return torch.div(
     torch.sum(F.pairwise_distance(y_real, y_pred, p=2)), len(y_real))
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -147,7 +148,7 @@ def best_model2(cross_validation):
     best_lambda = 0.002
     best_batch_size = 64
     nUnitLayer = 40
-    nEpoch=125
+    nEpoch=135
     if(cross_validation):
         min_loss=float('inf')
         nUnitLayers = [40]
