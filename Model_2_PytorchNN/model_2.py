@@ -147,7 +147,7 @@ def best_model2(cross_validation):
     best_lambda = 0.002
     best_batch_size = 64
     nUnitLayer = 40
-    nEpoch=125
+    nEpoch=135
     if(cross_validation):
         min_loss=float('inf')
         nUnitLayers = [40]

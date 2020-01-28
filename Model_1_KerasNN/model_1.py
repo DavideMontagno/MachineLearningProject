@@ -20,14 +20,7 @@ Y = dataset_tr[:, -2:]
 
 
 def euclidean_distance_loss(y_true, y_pred):
-    """
-    Euclidean distance loss
-    https://en.wikipedia.org/wiki/Euclidean_distance
-    :param y_true: TensorFlow/Theano tensor
-    :param y_pred: TensorFlow/Theano tensor of the same shape as y_true
-    :return: float
-    """
-    return K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1))
+    return K.mean(K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1)))
 
 
 def train_and_learningcurve(x_tr, y_tr, x_ts, y_ts, eta=0.015, alpha=0.7, nEpoch=350, lambda_param=0.01, nUnitPerLayer=20,
@@ -91,11 +84,11 @@ def cross_validation1(eta, alpha, lambda_param, batch_size, nUnitLayer, nEpoc):
 
 def best_model1(cross_validation):
     best_eta = 0.001
-    best_alpha = 0.85
-    best_lambda = 0.0005
+    best_alpha = 0.84
+    best_lambda = 0.0006
     best_batch_size = 64
     best_nUnitLayer = 25
-    nEpoch = 160
+    nEpoch = 170
    
     if(cross_validation):
         min_loss = float('inf')
@@ -141,4 +134,4 @@ def make_prediction1(eta, alpha, lambda_param, batch_size, nUnitPerLayer, nEpoch
     Y_test = data_test[:, -2:]
     y_pred_final = model.predict(X_test)
     to_return = K.get_value(euclidean_distance_loss(Y_test, y_pred_final))
-    return (model.predict(dataset_bs[:, 1:]), numpy.mean(to_return))
+    return (model.predict(dataset_bs[:, 1:]), to_return)

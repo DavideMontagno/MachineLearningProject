@@ -25,10 +25,10 @@ def create_plot(y_pred,model_index):
     plt.title(numbers_to_Models(model_index))
     labels = ['Data point predicted by model: '+str(model_index)]
     plt.legend(labels)
-    if(model_index==1): plt.savefig('./plots_final/Keras_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
+    if(model_index==1): plt.savefig('./Keras_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
     if(model_index==2):
-        plt.savefig('./plots_final/Pytorch_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
-    if(model_index==3): plt.savefig('./plots_final/SVM_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
+        plt.savefig('./Pytorch_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
+    if(model_index==3): plt.savefig('./SVM_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
     plt.close()
    
 
