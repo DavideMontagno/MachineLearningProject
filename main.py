@@ -4,7 +4,14 @@ from Model_3_ScikitSVM.model_3 import best_model3
 import matplotlib.pyplot as plt
 import numpy
 import time
+import pandas as pd
 
+
+def line_prepender(filename, line):
+    with open(filename, 'r+') as f:
+        content = f.read()
+        f.seek(0, 0)
+        f.write(line.rstrip('\r\n') + '\n' + content)
 
 def numbers_to_Models(argument): 
     switcher = { 
@@ -33,9 +40,9 @@ def create_plot(y_pred,model_index):
     plt.close()
    
 loss_final = []
+
 print('Using Neural Network in Keras...')
 start = time.time()
-#loss_final.append(1235464)
 returnBestModel1 = best_model1(False)
 loss_final.append(returnBestModel1[1])
 print("TEST ERROR 1 = ",loss_final[len(loss_final)-1])
@@ -43,6 +50,7 @@ create_plot(returnBestModel1[0],1)
 end = time.time()
 print('Prediction done!')  
 print('Ended in: ',end-start,'seconds') 
+
 
 print('Using Neural Network in Pytorch...')
 start = time.time()
@@ -52,8 +60,9 @@ print("TEST ERROR 2 = ",loss_final[len(loss_final)-1])
 create_plot(returnBestModel2[0],2)  
 end = time.time()
 print('Prediction done!')  
-print('Ended in: ',end-start,'seconds') 
 
+
+print('Ended in: ',end-start,'seconds') 
 print('Using Support Vectors Machine..') 
 start = time.time()
 returnBestModel3 = best_model3(False)
@@ -63,6 +72,26 @@ create_plot(returnBestModel3[0],3)
 end = time.time()
 print('Prediction done!')  
 print('Ended in: ',end-start,'seconds') 
+
+
 print('Losses: ',loss_final)
 print(numbers_to_Models(loss_final.index(min(loss_final))))
 print('Best model is: ',numbers_to_Models(loss_final.index(min(loss_final))+1))
+
+best_model = loss_final.index(min(loss_final))
+
+final_name="./BOFMON_ML-CUP19-TS.csv"
+if(best_model == 0):
+    df = pd.DataFrame(returnBestModel1[0])
+    df.index = numpy.arange(1, len(df)+1)
+    df.to_csv(final_name,index=True,header=False)
+if(best_model==1): 
+    df = pd.DataFrame(returnBestModel2[0])
+    df.index = numpy.arange(1, len(df)+1)
+    df.to_csv(final_name,index=True,header=False)
+if(best_model==2): 
+    df = pd.DataFrame(returnBestModel3[0])
+    df.index = numpy.arange(1, len(df)+1)
+    df.to_csv(final_name,index=True,header=False)
+
+line_prepender(final_name,"# Antonio Boffa   Davide Montagno Bozzone\n# Group BOFMON\n# ML-CUP19\n# 30/11/2019")
