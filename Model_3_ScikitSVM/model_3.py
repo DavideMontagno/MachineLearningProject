@@ -33,8 +33,8 @@ def best_model3(cross_validation):
     if(cross_validation):
         kfold = KFold(n_splits=splits_kfold, random_state=None, shuffle=True)
         min_loss=float('inf')
-        Cs = [8] #low confidence with data => Low C - not too much (maybe underfitting)
-        gammas = [0.07] #took from scikit (relantionship with C)
+        Cs = [7,8] #low confidence with data => Low C - not too much (maybe underfitting)
+        gammas = [0.07, 0.05] #took from scikit (relantionship with C)
         epsilons = [0.1,0.2] 
         for epsilon in epsilons:
             for C in Cs:
@@ -53,6 +53,7 @@ def best_model3(cross_validation):
                         all_loss.append(loss_fn(y_ts, y_pred))
                         
                 tmp = np.mean(all_loss)
+                plot_learning_curve(C,gamma,epsilon)
                 if(tmp<min_loss):
                     min_loss=tmp
                     best_C = C
@@ -63,6 +64,7 @@ def best_model3(cross_validation):
     svr = SVR(kernel='rbf', C=best_C, gamma=best_gamma, epsilon=best_epsilon)
     mor = MultiOutputRegressor(svr)
     mor.fit(X, Y)
+    
     dataset_bs = np.genfromtxt('./project/ML-CUP19-TS.csv', delimiter=',', dtype=np.float64)
     data_test = np.genfromtxt(
         './project/ML-our_test_set.csv', delimiter=',', dtype=np.float64)
@@ -101,11 +103,11 @@ def plot_learning_curve(C,gamma,epsilon):
             all_loss_tr.append(this_loss_tr)
         plt.plot( n_examples, all_loss_tr)
         plt.plot( n_examples, all_loss,'--')
-        plt.title("Learning Curve SVM")
+        plt.title("Learning Curve SVM C="+str(C)+" gamma="+str(gamma)+" epsilon="+str(epsilon))
         plt.xlabel("Number of training examples")
         plt.ylabel("Loss (Mean Euclidian Distance)")
         plt.legend(["Loss on training set","Loss on validation set"])
-        plt.savefig('./plots_final/svm_learning_curve_' + str(C) + '_' + str(gamma) +'_'+str(epsilon)+'.png', dpi=500)
+        plt.savefig('./svm_learning_curve_' + str(C) + '_' + str(gamma) +'_'+str(epsilon)+'.png', dpi=500)
         plt.close()
         return
 

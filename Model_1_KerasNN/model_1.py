@@ -20,13 +20,6 @@ Y = dataset_tr[:, -2:]
 
 
 def euclidean_distance_loss(y_true, y_pred):
-    """
-    Euclidean distance loss
-    https://en.wikipedia.org/wiki/Euclidean_distance
-    :param y_true: TensorFlow/Theano tensor
-    :param y_pred: TensorFlow/Theano tensor of the same shape as y_true
-    :return: float
-    """
     return K.mean(K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1)))
 
 
@@ -79,10 +72,11 @@ def cross_validation1(eta, alpha, lambda_param, batch_size, nUnitLayer, nEpoc):
         averageLossTS += score[1]
     averageLoss /= len(cvscores)
     averageLossTS /= len(cvscores)
+    print(str(averageLoss)+'_________'+str(averageLossTS))
     fig.legend(forLegend, loc='center right')
     fig.suptitle('Model loss ' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
         lambda_param) + '_' + str(batch_size))
-    fig.savefig('./plots_final/Keras_Validation/Keras_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
+    fig.savefig('./Keras_learning_curve_' + str(eta) + '_' + str(alpha) + '_' + str(nEpoc) + '_' + str(
         lambda_param) + '_' + str(batch_size) + '_' + str(averageLossTS) + '_'+str(nUnitLayer)+'.png', dpi=600)
     plt.close()
     return averageLossTS
@@ -99,9 +93,9 @@ def best_model1(cross_validation):
     if(cross_validation):
         min_loss = float('inf')
         nUnitLayers = [25]
-        etas = [0.0009, 0.001, 0.0015]
-        alphas = [0.6, 0.65, 0.7]
-        lambdas = [0.0009, 0.001, 0.0015]
+        etas = [0.001]
+        alphas = [0.85]
+        lambdas = [0.0005]
         batch_sizes = [64]
         for nUnitLayer in nUnitLayers:
             for eta in etas:
@@ -117,6 +111,7 @@ def best_model1(cross_validation):
                                 best_lambda = _lambda
                                 best_eta = eta
                                 best_nUnitLayer = nUnitLayer
+
     return make_prediction1(best_eta, best_alpha, best_lambda, best_batch_size, best_nUnitLayer, nEpoch)
 
 
