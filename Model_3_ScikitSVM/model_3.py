@@ -27,15 +27,15 @@ def loss_fn(y_real, y_pred): return call_loss(y_real, y_pred)
 s = 50
 a = 0.4
 def best_model3(cross_validation):
-    best_C = 10
+    best_C = 8
     best_gamma= 0.05
-    best_epsilon = 0.1
+    best_epsilon = 0.2
     if(cross_validation):
         kfold = KFold(n_splits=splits_kfold, random_state=None, shuffle=True)
         min_loss=float('inf')
-        Cs = [7,8] #low confidence with data => Low C - not too much (maybe underfitting)
-        gammas = [0.07, 0.05] #took from scikit (relantionship with C)
-        epsilons = [0.1,0.2] 
+        Cs = [8] #low confidence with data => Low C - not too much (maybe underfitting)
+        gammas = [0.05] #took from scikit (relantionship with C)
+        epsilons = [0.2] 
         for epsilon in epsilons:
             for C in Cs:
                 for gamma in gammas:
