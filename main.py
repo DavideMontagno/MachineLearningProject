@@ -31,8 +31,9 @@ def create_plot(y_pred,model_index):
         plt.savefig('./Pytorch_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
     if(model_index==3): plt.savefig('./SVM_BSvisualization_Model_' + str(model_index) +'.png', dpi=500)
     plt.close()
-   
 loss_final = []
+
+
 print('Using Neural Network in Keras...')
 start = time.time()
 #loss_final.append(1235464)
