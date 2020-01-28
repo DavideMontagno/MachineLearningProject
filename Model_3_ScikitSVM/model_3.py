@@ -33,13 +33,15 @@ def best_model3(cross_validation):
     if(cross_validation):
         kfold = KFold(n_splits=splits_kfold, random_state=None, shuffle=True)
         min_loss=float('inf')
+        min_loss_tr=float('inf')
         Cs = [8] #low confidence with data => Low C - not too much (maybe underfitting)
-        gammas = [0.05] #took from scikit (relantionship with C)
+        gammas = [ 0.05] #took from scikit (relantionship with C)
         epsilons = [0.2] 
         for epsilon in epsilons:
             for C in Cs:
                 for gamma in gammas:
                     all_loss = []
+                    all_loss_tr = []
                     for traing_index, test_index in kfold.split(X):
                         x_tr = X[traing_index]
                         y_tr = Y[traing_index]
@@ -51,20 +53,22 @@ def best_model3(cross_validation):
                         mor.fit(x_tr, y_tr)
                         y_pred = mor.predict(x_ts)
                         all_loss.append(loss_fn(y_ts, y_pred))
-                        
+                        y_pred_tr = mor.predict(x_tr)
+                        all_loss_tr.append(loss_fn(y_pred_tr, y_tr))                        
                 tmp = np.mean(all_loss)
+                tmp_tr = np.mean(all_loss_tr)
                 plot_learning_curve(C,gamma,epsilon)
                 if(tmp<min_loss):
                     min_loss=tmp
+                    min_loss_tr=tmp_tr
                     best_C = C
                     best_epsilon=epsilon
                     best_gamma = gamma
-
-    #plot_learning_curve(best_C,best_gamma,best_epsilon)
+        print("TR = "+str(min_loss_tr)+"_____TS = "+str(min_loss))
+    plot_learning_curve(best_C,best_gamma,best_epsilon)
     svr = SVR(kernel='rbf', C=best_C, gamma=best_gamma, epsilon=best_epsilon)
     mor = MultiOutputRegressor(svr)
     mor.fit(X, Y)
-    
     dataset_bs = np.genfromtxt('./project/ML-CUP19-TS.csv', delimiter=',', dtype=np.float64)
     data_test = np.genfromtxt(
         './project/ML-our_test_set.csv', delimiter=',', dtype=np.float64)
